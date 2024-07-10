@@ -1,0 +1,24 @@
+{
+    "login": {
+        "loginPrompt": "Log In to Employee Fuel App"
+    },
+    "homeScreen" : {
+        "home" : "Home",
+        "recentUser": "Recent User",
+        "viewAll": "View All"
+    }, 
+    "historyScreen" : {
+        "history" : "History",
+        "print": "Print"
+    }, 
+    "errorMessages": {
+        "login": {
+            "loginEmpty": "Please enter your username and password",
+            "phoneEmpty": "Please enter your phone number",
+            "passwordEmpty": "Please enter your password",
+            "notRegistered": "You are not registered with us",
+            "incorrectPassword": "Password incorrect",
+            "invalidCredentials": "Invalid credentials"
+        }
+    }
+}
