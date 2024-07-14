@@ -20,13 +20,13 @@ import {colors} from '../utils/colors';
 import TransactionHistoryComponent from '../components/transaction-history-component';
 
 const RefillSuccessReceipt = ({navigation}) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.navigate('Home');
-    }, 5000);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     navigation.navigate('Home');
+  //   }, 5000);
 
-    return () => clearTimeout(timer); // Clear the timer if the component is unmounted
-  }, [navigation]);
+  //   return () => clearTimeout(timer); // Clear the timer if the component is unmounted
+  // }, [navigation]);
   const {t} = useTranslation();
   return (
     <SafeAreaView style={styles.container}>
@@ -66,7 +66,7 @@ const RefillSuccessReceipt = ({navigation}) => {
           style={{
             height: '100%',
             elevation: 1,
-            paddingHorizontal: 20,
+            // paddingHorizontal: 20,
             justifyContent: 'center',
             overflow: 'hidden',
           }}>
@@ -76,7 +76,9 @@ const RefillSuccessReceipt = ({navigation}) => {
           </Text>
           {/* <FillingStationCard isReviewEnabled={false} /> */}
           <TransactionHistoryComponent />
-          <CustomButton />
+          <View style={{marginHorizontal: 20}}>
+            <CustomButton text={'Continue'} />
+          </View>
         </ImageBackground>
       </View>
     </SafeAreaView>

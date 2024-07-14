@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 // import CustomLoadingIndcator from '../components/custom-loading-indicator';
-
+import {useDispatch} from 'react-redux';
 import {colors} from '../utils/colors';
 import {
   CustomButton,
@@ -19,6 +19,16 @@ import {
 } from '../components';
 import AuthService from '../api/auth';
 import {CommonActions} from '@react-navigation/native';
+import {
+  setFuelStationId,
+  setFuelStationImage,
+  setFuelStationUserDetailsId,
+  setProfilePic,
+  setToken,
+  setUserIdFuelStationUser,
+  setUserName,
+} from '../redux/user-slice';
+import {BOP} from '../assets/svgs';
 
 const Login = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +37,7 @@ const Login = ({navigation}) => {
   const [error, setError] = useState('');
   const [isError, setIsError] = useState(false);
   const {t} = useTranslation();
-
+  const dispatch = useDispatch();
   const handleLoginPress = async () => {
     if (!phoneNumber) {
       setIsError(true);
@@ -51,9 +61,33 @@ const Login = ({navigation}) => {
       );
       setIsLoading(false);
       if (response.error_code === 0) {
+        console.log(response.result.token);
+        console.log(response.result.fuel_station_user_details._id);
+        dispatch(setToken(response.result.token));
+        // console.log('UserId: ' + response.result._id);
+        dispatch(setUserIdFuelStationUser(response.result._id));
+        dispatch(
+          setFuelStationUserDetailsId(
+            response.result.fuel_station_user_details._id,
+          ),
+        );
+        dispatch(
+          setFuelStationId(
+            response.result.fuel_station_user_details.fuel_station_id,
+          ),
+        );
+        dispatch(setUserName(response.result.user_name));
+        // dispatch(setProfilePic(response.result.))
+        dispatch(setFuelStationImage(response.result.fuel_station.image));
+
+        // console.log(
+        //   'Fuel station id: ' +
+        //     response.result.fuel_station_user_details.fuel_station_id,
+        // );
+
         const resetAction = CommonActions.reset({
           index: 0,
-          routes: [{name: 'Home'}],
+          routes: [{name: 'Main'}],
         });
         navigation.dispatch(resetAction);
         // navigation.navigate('Home');
@@ -107,6 +141,24 @@ const Login = ({navigation}) => {
       <TouchableOpacity style={{alignSelf: 'center', marginTop: 16}}>
         <Text>Forgot Password?</Text>
       </TouchableOpacity>
+      <View style={styles.bopContainer}>
+        <Text
+          style={{
+            position: 'relative',
+            right: 35,
+            top: 15,
+            textAlign: 'center',
+            fontSize: 10,
+            color: colors.black,
+            fontStyle: 'italic',
+            transform: [{rotate: '-15deg'}],
+            // borderWidth: 0.5,
+            borderRadius: 4,
+          }}>
+          Powered by
+        </Text>
+        <BOP />
+      </View>
     </View>
   );
 };
@@ -127,6 +179,12 @@ const styles = StyleSheet.create({
   },
   loadingIndicator: {
     marginTop: 20,
+  },
+  bopContainer: {
+    height: 80,
+    width: 120,
+    alignSelf: 'center',
+    marginTop: 40,
   },
 });
 

@@ -8,6 +8,7 @@ import {
   Button,
   Dimensions,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import {colors} from '../utils/colors';
 import {ArrowLeft, CameraIcon} from '../assets/icons';
@@ -18,6 +19,15 @@ import {
 } from 'react-native-vision-camera';
 import {usePermissions, EPermissionTypes} from '../utils/use-permissions';
 import {useIsFocused} from '@react-navigation/native';
+import TransactionService from '../api/transaction';
+import {useSelector} from 'react-redux';
+import {
+  selectFuelStationUserDetailsId,
+  selectToken,
+  selectUser,
+  selectUserIdFuelStationUser,
+} from '../redux/user-slice';
+import {ErrorMessageComponent} from '../components';
 
 const {width} = Dimensions.get('window');
 
@@ -32,6 +42,62 @@ const Scanner = ({navigation}) => {
   const device = useCameraDevice('back');
   const camera = useRef(null);
   const isFocused = useIsFocused();
+  const [isCodeScanned, setIsCodeScanned] = useState(false);
+  const user = useSelector(selectUser);
+  const [isOnPrimeTransaction, setIsOnPrimeTransaction] = useState(false);
+  const token = useSelector(selectToken);
+  const user_id_fuel_station_user = useSelector(selectUserIdFuelStationUser);
+  const fuel_station_user_detail_id = useSelector(
+    selectFuelStationUserDetailsId,
+  );
+  const fuel_station_id = user?.fuel_station_id;
+  const [errorMessage, setErrorMessage] = useState(null);
+  const initiateTransaction = async scannedData => {
+    console.log('Parsed scanned data: ', scannedData); // Add this line
+    const transaction_type = isOnPrimeTransaction ? 'On Prime' : 'Off Prime';
+    const transactionData = {
+      user_id_fuel_station_user,
+      fuel_station_user_detail_id,
+      fuel_station_id,
+      transaction_type,
+      ...(isOnPrimeTransaction
+        ? {
+            //Daily limit error should use 1
+            // litre_fuel: 1,
+            litre_fuel: scannedData?.litreFuel,
+            user_id_employee_corporate: scannedData?.userId,
+            employee_id: scannedData?.employeeId,
+            vehicle_id: scannedData?.vehicleId,
+            corporate_id: scannedData?.corporateId,
+            // fuel_type: scannedData?.fuelType,
+            //mismatch on the backend "Sending Super receiveing 1"
+            fuel_type: 1,
+          }
+        : {
+            static_qr_id: scannedData?.static_qr_id,
+          }),
+    };
+
+    console.log('Transaction Data:', transactionData); // Add this line
+
+    try {
+      const response = await TransactionService.postTransaction(
+        token,
+        transactionData,
+      );
+      console.log('Transaction response:', response);
+      setIsCodeScanned(false);
+      setIsActive(true);
+      if (response.error_code === 0) {
+        setIsActive(false);
+        navigation.navigate('RefillSuccessReceipt');
+      } else {
+        setErrorMessage(response.message);
+      }
+    } catch (error) {
+      console.error('Transaction initiation failed:', error);
+    }
+  };
 
   useEffect(() => {
     askPermissions()
@@ -48,7 +114,7 @@ const Scanner = ({navigation}) => {
   useEffect(() => {
     const handleBackPress = () => {
       setIsCameraShown(false);
-      return true; // Prevent default behavior
+      return true;
     };
 
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -69,38 +135,42 @@ const Scanner = ({navigation}) => {
     onCodeScanned: codes => {
       if (codes.length > 0) {
         console.log('Scanned QR Code:', codes[0].value);
-        setScannedContent(codes[0].value);
-        setIsActive(false);
-        setTimeout(() => {
-          setIsActive(true);
-        }, 500);
+        try {
+          const scannedData = JSON.parse(codes[0].value);
+          console.log('Parsed Scanned Data:', scannedData); // Add this line
+          setScannedContent(scannedData);
+          setIsActive(false);
+          setIsCodeScanned(true);
+          setIsOnPrimeTransaction(!scannedData?.static_qr_id);
+          initiateTransaction(scannedData); // Pass scannedData to initiateTransaction
+        } catch (error) {
+          setErrorMessage(error);
+          console.error('Error parsing scanned QR code:', error);
+        }
       }
     },
   });
 
   useEffect(() => {
-    let timeout;
-
-    if (isCameraInitialized) {
-      timeout = setTimeout(() => {
-        setIsActive(true);
-        setFlash('off');
-      }, 0);
+    if (isFocused && isCameraInitialized) {
+      setIsActive(true);
+      setFlash('off');
+    } else {
+      setIsActive(false);
     }
-    setIsActive(false);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [isCameraInitialized]);
+  }, [isFocused, isCameraInitialized]);
 
   const onInitialized = () => {
     setIsCameraInitialized(true);
     console.log('Camera initialized');
   };
 
-  return (
+  return isCodeScanned ? (
+    <ActivityIndicator size="large" color="#0000ff" />
+  ) : (
     <SafeAreaView style={styles.container}>
       <>
+        {errorMessage ? <ErrorMessageComponent text={errorMessage} /> : null}
         <View style={styles.headerContainer}>
           <TouchableOpacity
             style={styles.closeButton}
@@ -153,11 +223,13 @@ const Scanner = ({navigation}) => {
             </View>
           </View>
         )}
-        {scannedContent ? (
+        {/* {scannedContent ? (
           <View style={styles.scannedContentContainer}>
-            <Text style={styles.scannedContentText}>{scannedContent}</Text>
+            <Text style={styles.scannedContentText}>
+              {JSON.stringify(scannedContent)}
+            </Text>
           </View>
-        ) : null}
+        ) : null} */}
       </>
     </SafeAreaView>
   );

@@ -5,7 +5,8 @@
     "homeScreen" : {
         "home" : "Home",
         "recentUser": "Recent User",
-        "viewAll": "View All"
+        "viewAll": "View All",
+        "welcome": "welcome"
     }, 
     "historyScreen" : {
         "history" : "History",
@@ -20,5 +21,9 @@
             "incorrectPassword": "Password incorrect",
             "invalidCredentials": "Invalid credentials"
         }
+    }, 
+    "receipt": {
+        "refillDone": "Transaction successful",
+        "refillDoneDescription": "The transaction has been successfully completed. "
     }
 }

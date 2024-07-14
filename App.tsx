@@ -28,6 +28,12 @@ import {
 import { MainStackNavigator } from './src/navigation';
 import { I18nextProvider } from 'react-i18next';
 import i18next from './src/services/i18next';
+import { Provider } from 'react-redux';
+import {store} from './src/store';
+import { persistStore } from 'redux-persist';
+import { PersistGate } from 'redux-persist/integration/react';
+
+let persistedStore = persistStore(store);
 
 
 
@@ -39,11 +45,15 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <NavigationContainer>
-      <I18nextProvider i18n={i18next}>
-        <MainStackNavigator />
-      </I18nextProvider>
-    </NavigationContainer>
+    <Provider store={store}>
+      <PersistGate persistor={persistedStore}>
+        <NavigationContainer>
+          <I18nextProvider i18n={i18next}>
+            <MainStackNavigator />
+          </I18nextProvider>
+        </NavigationContainer>
+      </PersistGate>
+    </Provider>
   );
 }
 

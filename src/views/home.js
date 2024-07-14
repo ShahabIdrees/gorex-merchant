@@ -20,16 +20,30 @@ import ConsumptionComponent from '../components/consumption-component';
 import TransactionHistoryService from '../api/transaction-history';
 import {colors} from '../utils/colors';
 import globalStyles from '../theme';
+import {folio, profile} from '../assets/pngs';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  selectFuelStationImage,
+  selectFuelStationUserDetailsId,
+  selectToken,
+  selectUserName,
+  setToken,
+} from '../redux/user-slice';
+import {EmptyListIcon} from '../assets/svgs';
 
 const Home = ({navigation}) => {
   const {t} = useTranslation();
   const route = useRoute();
-  const {paramName1, paramName2} = route.params || {};
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState('');
-
+  const token = useSelector(selectToken);
+  const dispatch = useDispatch();
+  // const fuelStationUserDetailsId = '668f7af43dc912500871a4d4';
+  const fuelStationUserDetailsId = useSelector(selectFuelStationUserDetailsId);
+  const userName = useSelector(selectUserName);
+  const fuelStationImage = useSelector(selectFuelStationImage);
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -55,10 +69,24 @@ const Home = ({navigation}) => {
     fetchData();
   }, []);
 
+  const renderEmpty = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <EmptyListIcon />
+        <Text
+          style={{
+            color: 'black',
+            fontSize: 18,
+            fontWeight: '600',
+            marginTop: 12,
+          }}>
+          {error}
+        </Text>
+      </View>
+    );
+  };
   const fetchData = async () => {
     try {
-      const token = 'YOUR_TOKEN';
-      const fuelStationUserDetailsId = 'YOUR_FUEL_STATION_USER_DETAILS_ID';
       const limit = 5;
 
       const response = await TransactionHistoryService.getAllTransactionHistory(
@@ -70,6 +98,12 @@ const Home = ({navigation}) => {
       setIsLoading(false);
       if (response.error_code === 0) {
         setData(response.result);
+        console.log('Data received: ' + data);
+        dispatch(setToken(response.token));
+      } else if (response.error_code === 4) {
+        // console.log('Token: ', response.token);
+        dispatch(setToken(response.token));
+        setError('No record found against this user');
       } else {
         setIsError(true);
         setError(response.error_message || 'Something went wrong');
@@ -98,18 +132,18 @@ const Home = ({navigation}) => {
             ]}>
             <View style={{flexDirection: 'row'}}>
               <View style={styles.imageWrapper}>
-                {/* <Image source={profile} resizeMethod="contain" /> */}
+                <Image source={profile} resizeMethod="contain" />
               </View>
               <View style={{marginHorizontal: 8}}>
                 <Text style={[styles.welcome, {textAlign: 'left'}]}>
-                  {t('home.welcome')}
+                  {t('homeScreen.welcome')}
                 </Text>
-                <Text style={[styles.name]}>Hussain Haider</Text>
+                <Text style={[styles.name]}>{userName}</Text>
               </View>
             </View>
             <View style={styles.companyImageWrapper}>
               <Image
-                // source={folio}
+                source={{uri: fuelStationImage}}
                 resizeMode="fill"
                 style={styles.image}></Image>
             </View>
@@ -169,11 +203,12 @@ const Home = ({navigation}) => {
                   transactionDateTime={new Date(
                     item.createdAt,
                   ).toLocaleString()}
-                  nozzlePrice={item.nozzle_price.toFixed(2)}
+                  nozzlePrice={item.nozzle_price?.toFixed(2)}
                   quantity={item.litre_fuel}
                   transactionType={item.transaction_type}
                 />
               )}
+              ListEmptyComponent={renderEmpty}
               keyExtractor={item => item._id}
               style={{marginBottom: 120}}
               // ListEmptyComponent={<EmptyListComponent isFullScreen={false} />}
@@ -195,7 +230,7 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 23,
     overflow: 'hidden',
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: colors.imageBorder,
     elevation: 1,
     shadowRadius: 20,
@@ -219,7 +254,7 @@ const styles = StyleSheet.create({
     color: colors.homeText,
   },
   companyImageWrapper: {
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: colors.imageBorder,
     height: 29,
     width: 56,
@@ -258,6 +293,9 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
+  },
+  emptyContainer: {
+    alignItems: 'center',
   },
 });
 

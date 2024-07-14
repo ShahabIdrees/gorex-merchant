@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 60,
     fontSize: 16,
+    color: 'black',
   },
   icon: {
     padding: 10,

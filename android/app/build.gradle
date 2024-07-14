@@ -84,12 +84,11 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('gorex_merchant.keystore')
-            storePassword System.getenv("KEYSTORE_PASSWORD")
-            keyAlias System.getenv("KEY_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
-
-        }
+        storeFile file('gorex_merchant.keystore')
+        storePassword 'gorex123'
+        keyAlias 'gorex_merchant'
+        keyPassword 'gorex123'
+    }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'

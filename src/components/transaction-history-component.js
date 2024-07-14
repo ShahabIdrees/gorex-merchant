@@ -1,3 +1,7 @@
+//ERROR Code: 24
+//suggests that the transaction type is off prime and expired
+//Fix this on urgent basis
+
 import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {colors} from '../utils/colors';
@@ -56,7 +60,7 @@ const TransactionHistoryComponent = ({
           ]}>
           <Text style={styles.statLabel}>Quantity</Text>
           <Text style={styles.statValue}>
-            Rs {parseFloat(nozlePrice).toFixed(2)} Ltr
+            {parseFloat(quantity).toFixed(2)} Ltr
           </Text>
         </View>
         <View style={styles.statItem}>
