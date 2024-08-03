@@ -18,8 +18,35 @@ import {successReceiptBG, successPNG} from '../assets/pngs';
 import {useTranslation} from 'react-i18next';
 import {colors} from '../utils/colors';
 import TransactionHistoryComponent from '../components/transaction-history-component';
+import {useSelector} from 'react-redux';
+import {selectTransaction} from '../redux/transaction-slice';
+import {
+  selectCreatedAt,
+  selectFuelType,
+  selectLitreFuel,
+  selectNozzlePrice,
+  selectPlateNo,
+  selectTransactionType,
+  selectVehicleMake,
+  selectVehicleModel,
+  selectVehicleVariant,
+} from '../redux/receipt-slice';
+import {getFuelType} from '../enums/fuel-type';
 
 const RefillSuccessReceipt = ({navigation}) => {
+  const fuelType = useSelector(selectFuelType);
+  const litreFuel = useSelector(selectLitreFuel);
+  const transactionType = useSelector(selectTransactionType);
+  const nozzlePrice = useSelector(selectNozzlePrice);
+  const createdAt = useSelector(selectCreatedAt);
+  const vehicleMake = useSelector(selectVehicleMake);
+  const vehicleModel = useSelector(selectVehicleModel);
+  const vehiclePlate = useSelector(selectPlateNo);
+  const vehicleVariant = useSelector(selectVehicleVariant);
+
+  const vehicleName = `${vehicleMake} ${vehicleModel} ${vehicleVariant}`;
+  const transactionDateTime = new Date(createdAt).toLocaleString();
+
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     navigation.navigate('Home');
@@ -27,12 +54,20 @@ const RefillSuccessReceipt = ({navigation}) => {
 
   //   return () => clearTimeout(timer); // Clear the timer if the component is unmounted
   // }, [navigation]);
+  // const quantity = useSelector(selectTransaction);
+  // const recieptItems = useSelector(selctRe)
   const {t} = useTranslation();
+  // const fuelType = useSelector(selectFuelType);
+  // const litreFuel = useSelector(selectLitreFuel);
+  // const transactionType = useSelector(selectTransactionType);
+  console.log('FuelType: ' + fuelType);
+  console.log('Quantity: ' + litreFuel);
+
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
         style={styles.cancelButton}
-        onPress={() => navigation.goBack()}>
+        onPress={() => navigation.navigate('Home')}>
         <Cancel />
       </TouchableOpacity>
       <View
@@ -69,16 +104,26 @@ const RefillSuccessReceipt = ({navigation}) => {
             // paddingHorizontal: 20,
             justifyContent: 'center',
             overflow: 'hidden',
+            paddingHorizontal: 20,
           }}>
           <Text style={styles.title}>{t('receipt.refillDone')}</Text>
           <Text style={styles.message}>
             {t('receipt.refillDoneDescription')}
           </Text>
           {/* <FillingStationCard isReviewEnabled={false} /> */}
-          <TransactionHistoryComponent />
-          <View style={{marginHorizontal: 20}}>
+          <TransactionHistoryComponent
+            isCompact={false}
+            fuelType={getFuelType(fuelType)}
+            quantity={litreFuel}
+            transactionType={transactionType}
+            vehicleName={vehicleName}
+            transactionDateTime={transactionDateTime}
+            nozlePrice={nozzlePrice}
+            numberPlate={vehiclePlate}
+          />
+          {/* <View style={{marginHorizontal: 20}}>
             <CustomButton text={'Continue'} />
-          </View>
+          </View> */}
         </ImageBackground>
       </View>
     </SafeAreaView>
@@ -100,11 +145,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     alignSelf: 'center',
     fontWeight: 'bold',
-    color: colors.primaryTextColor,
+    color: colors.primaryText,
     marginBottom: 16,
   },
   message: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#474747',
     marginBottom: 24,
     textAlign: 'center',

@@ -1,5 +1,43 @@
 {
-  "login": {
-    "loginPrompt": ""
-  }
+    "login": {
+        "loginPrompt": "تسجيل الدخول إلى تطبيق Merchant Fuel",
+        "loginFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى لاحقًا"
+    },
+    "homeScreen": {
+        "home": "الرئيسية",
+        "recentUser": "العمليات الأخيرة",
+        "viewAll": "عرض الكل",
+        "welcome": "أهلاً وسهلاً",
+        "salesOverview": "نظرة عامة على المبيعات"
+    },
+    "historyScreen": {
+        "history": "التاريخ",
+        "print": "طباعة"
+    },
+    "errorMessages": {
+        "login": {
+            "loginEmpty": "يرجى إدخال اسم المستخدم وكلمة المرور",
+            "phoneEmpty": "يرجى إدخال رقم الهاتف",
+            "passwordEmpty": "يرجى إدخال كلمة المرور",
+            "notRegistered": "هذا المستخدم غير مسجل",
+            "incorrectPassword": "كلمة المرور غير صحيحة",
+            "invalidCredentials": "بيانات الاعتماد غير صحيحة",
+            "incorrectPhonenumber": "رقم الهاتف غير صحيح",
+            "networkError": "مشكلة في الاتصال. تأكد من أن لديك اتصال إنترنت ثابت",
+            "invalidPhoneNumber": "رقم الهاتف غير صحيح"
+        }
+    },
+    "receipt": {
+        "refillDone": "تمت العملية بنجاح",
+        "refillDoneDescription": "تمت العملية بنجاح."
+    },
+    "scanner": {
+        "scanQR": "مسح رمز الاستجابة السريعة",
+        "cameraPrompt": "يرجى تحريك الكاميرا فوق شاشة جهاز آخر"
+    },
+    "transactionDetails": {
+        "nozzlePrice": "سعر الفوهة",
+        "quantity": "الكمية",
+        "totalAmount": "المبلغ الإجمالي"
+    }
 }

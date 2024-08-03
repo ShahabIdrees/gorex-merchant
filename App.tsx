@@ -32,6 +32,7 @@ import { Provider } from 'react-redux';
 import {store} from './src/store';
 import { persistStore } from 'redux-persist';
 import { PersistGate } from 'redux-persist/integration/react';
+import { BottomSheetProvider } from './src/utils/bottom-sheet-provider';
 
 let persistedStore = persistStore(store);
 
@@ -47,33 +48,18 @@ function App(): React.JSX.Element {
   return (
     <Provider store={store}>
       <PersistGate persistor={persistedStore}>
-        <NavigationContainer>
-          <I18nextProvider i18n={i18next}>
-            <MainStackNavigator />
-          </I18nextProvider>
-        </NavigationContainer>
+        {/* <BottomSheetProvider> */}
+          <NavigationContainer>
+            <I18nextProvider i18n={i18next}>
+              <MainStackNavigator />
+            </I18nextProvider>
+          </NavigationContainer>
+        {/* </BottomSheetProvider> */}
       </PersistGate>
     </Provider>
   );
 }
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+// const styles = StyleSheet.create({});
 
 export default App;

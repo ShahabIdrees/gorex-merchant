@@ -1,12 +1,14 @@
 {
     "login": {
-        "loginPrompt": "Log In to Employee Fuel App"
+        "loginPrompt": "Log In to Merchant Fuel App", 
+        "loginFailed": "Failed to log you in. Please try again later"
     },
     "homeScreen" : {
         "home" : "Home",
-        "recentUser": "Recent User",
+        "recentUser": "Recent Transactions",
         "viewAll": "View All",
-        "welcome": "welcome"
+        "welcome": "welcome",
+        "salesOverview": "Sales Overview",
     }, 
     "historyScreen" : {
         "history" : "History",
@@ -17,13 +19,25 @@
             "loginEmpty": "Please enter your username and password",
             "phoneEmpty": "Please enter your phone number",
             "passwordEmpty": "Please enter your password",
-            "notRegistered": "You are not registered with us",
+            "notRegistered": "This user is not registered",
             "incorrectPassword": "Password incorrect",
-            "invalidCredentials": "Invalid credentials"
+            "invalidCredentials": "Invalid credentials",
+            "incorrectPhonenumber": "Incorrect phone number",
+            "networkError": "Connectivity issue. Make sure you have a stable internet connection", 
+            "invalidPhoneNumber": "Phone number is not correct"
         }
     }, 
     "receipt": {
         "refillDone": "Transaction successful",
         "refillDoneDescription": "The transaction has been successfully completed. "
+    }, 
+    "scanner": {
+        "scanQR":"Scan QR Code", 
+        "cameraPrompt": "Please move your camera over another device’s screen" 
+    }, 
+    "transactionDetails": {
+        "nozzlePrice" : "Nozzle Price",
+        "quantity": "Quantity",
+        "totalAmount": "Total Amount"
     }
 }

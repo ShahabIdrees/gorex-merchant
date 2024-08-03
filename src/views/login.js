@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-// import CustomLoadingIndcator from '../components/custom-loading-indicator';
 import {useDispatch} from 'react-redux';
 import {colors} from '../utils/colors';
 import {
@@ -16,12 +15,14 @@ import {
   LoginInput,
   ErrorMessageComponent,
   CustomLoadingIndicator,
+  CustomPhoneInput,
 } from '../components';
 import AuthService from '../api/auth';
 import {CommonActions} from '@react-navigation/native';
 import {
   setFuelStationId,
   setFuelStationImage,
+  setFuelStationName,
   setFuelStationUserDetailsId,
   setProfilePic,
   setToken,
@@ -29,20 +30,33 @@ import {
   setUserName,
 } from '../redux/user-slice';
 import {BOP} from '../assets/svgs';
+import {validatePakistaniNumber} from '../utils/helper-functions';
 
 const Login = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [fullPhoneNumber, setFullPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isError, setIsError] = useState(false);
+  const [countryCode, setCountryCode] = useState('PK'); // Default to Pakistan
+  const [callingCode, setCallingCode] = useState('92'); // Default calling code for Pakistan
   const {t} = useTranslation();
   const dispatch = useDispatch();
+
   const handleLoginPress = async () => {
-    if (!phoneNumber) {
+    if (!fullPhoneNumber) {
       setIsError(true);
-      setError(t('errorMessages.login.loginEmpty'));
+      setError(t('errorMessages.login.invalidPhoneNumber'));
       return;
+    }
+    if (countryCode === 92 || countryCode === '+92') {
+      const isValidPhoneNumber = validatePakistaniNumber(phoneNumber);
+      if (!isValidPhoneNumber) {
+        setIsError(true);
+        setError(t('errorMessages.login.invalidPhoneNumber'));
+        return;
+      }
     }
     if (!password) {
       setIsError(true);
@@ -56,15 +70,12 @@ const Login = ({navigation}) => {
 
     try {
       const response = await AuthService.merchantEmployeeLogin(
-        phoneNumber,
+        fullPhoneNumber,
         password,
       );
       setIsLoading(false);
       if (response.error_code === 0) {
-        console.log(response.result.token);
-        console.log(response.result.fuel_station_user_details._id);
         dispatch(setToken(response.result.token));
-        // console.log('UserId: ' + response.result._id);
         dispatch(setUserIdFuelStationUser(response.result._id));
         dispatch(
           setFuelStationUserDetailsId(
@@ -76,21 +87,30 @@ const Login = ({navigation}) => {
             response.result.fuel_station_user_details.fuel_station_id,
           ),
         );
+        dispatch(
+          setProfilePic(
+            `https://uat-gorex-api-gateway.gorex.pk/fueling/${response.result.fuel_station_user_details.image}`,
+          ),
+        );
         dispatch(setUserName(response.result.user_name));
-        // dispatch(setProfilePic(response.result.))
-        dispatch(setFuelStationImage(response.result.fuel_station.image));
-
-        // console.log(
-        //   'Fuel station id: ' +
-        //     response.result.fuel_station_user_details.fuel_station_id,
-        // );
+        dispatch(
+          setFuelStationImage(
+            `https://uat-gorex-api-gateway.gorex.pk/fueling/${response.result.fuel_station.image}`,
+          ),
+        );
+        dispatch(setFuelStationName(response.result?.fuel_station?.name));
 
         const resetAction = CommonActions.reset({
           index: 0,
           routes: [{name: 'Main'}],
         });
         navigation.dispatch(resetAction);
-        // navigation.navigate('Home');
+      } else if (response.error_code === 3) {
+        setIsError(true);
+        setError(t('errorMessages.login.invalidCredentials'));
+      } else if (response.error_code === 4) {
+        setIsError(true);
+        setError(t('errorMessages.login.notRegistered'));
       } else {
         setIsError(true);
         setError(t('errorMessages.login.invalidCredentials'));
@@ -98,20 +118,28 @@ const Login = ({navigation}) => {
     } catch (err) {
       setIsLoading(false);
       setIsError(true);
-      setError(t('login.loginFailed'));
+      setError(t('errorMessages.login.networkError'));
     }
+  };
+
+  const handleForgotPasswordPress = () => {
+    // openBottomSheet('ForgotPasswordSheet', 770);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.prompt}>{t('login.loginPrompt')}</Text>
+      <Text style={[styles.label, {color: colors.primaryText}]}>Login</Text>
+
       {isError ? <ErrorMessageComponent text={error} /> : null}
-      <LoginInput
-        marginTop={24}
-        label={'Phone'}
-        placeholder={'(099) 838 838'}
-        inputType={'phone-pad'}
-        handleChangeText={setPhoneNumber}
+      <CustomPhoneInput
+        countryCode={countryCode}
+        callingCode={callingCode}
+        setCountryCode={setCountryCode}
+        setCallingCode={setCallingCode}
+        phoneNumber={phoneNumber}
+        setPhoneNumber={setPhoneNumber}
+        onPhoneNumberChange={setFullPhoneNumber} // Handle full phone number
       />
       <LoginInput
         marginTop={2}
@@ -121,11 +149,6 @@ const Login = ({navigation}) => {
         handleChangeText={setPassword}
       />
       {isLoading ? (
-        // <CustomLoadingIndicator
-        //   size={40}
-        //   color={colors.brandAccentColor}
-        //   style={styles.loadingIndicator}
-        // />
         <ActivityIndicator
           size={Platform.OS === 'ios' ? 'large' : 50}
           color={colors.brandAccentColor}
@@ -138,21 +161,21 @@ const Login = ({navigation}) => {
           handlePress={handleLoginPress}
         />
       )}
-      <TouchableOpacity style={{alignSelf: 'center', marginTop: 16}}>
-        <Text>Forgot Password?</Text>
+      <TouchableOpacity
+        style={{alignSelf: 'center', marginTop: 16}}
+        onPress={handleForgotPasswordPress}>
+        <Text style={{color: 'black'}}>Forgot Password?</Text>
       </TouchableOpacity>
       <View style={styles.bopContainer}>
         <Text
           style={{
             position: 'relative',
-            right: 35,
-            top: 15,
             textAlign: 'center',
             fontSize: 10,
+            marginBottom: -10,
             color: colors.black,
             fontStyle: 'italic',
-            transform: [{rotate: '-15deg'}],
-            // borderWidth: 0.5,
+            fontFamily: 'NotoSans-Regular',
             borderRadius: 4,
           }}>
           Powered by
@@ -177,14 +200,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: colors.headingText,
   },
-  loadingIndicator: {
-    marginTop: 20,
-  },
   bopContainer: {
     height: 80,
-    width: 120,
+    width: 80,
     alignSelf: 'center',
     marginTop: 40,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
 });
 

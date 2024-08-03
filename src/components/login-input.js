@@ -16,6 +16,7 @@ const LoginInput = ({
   placeholder,
   labelColor = '#000',
   placeHolderColor = '#999',
+  maxLength,
   isSecureEntry = false,
   inputType,
   handleChangeText,
@@ -31,6 +32,7 @@ const LoginInput = ({
       <Text style={[styles.label, {color: labelColor}]}>{label}</Text>
       <View style={styles.inputContainer}>
         <TextInput
+          maxLength={maxLength}
           style={styles.input}
           secureTextEntry={secureText}
           placeholder={placeholder}

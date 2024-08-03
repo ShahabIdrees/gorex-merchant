@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   BackHandler,
+  Modal,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useFocusEffect, useRoute} from '@react-navigation/native';
@@ -23,13 +24,17 @@ import globalStyles from '../theme';
 import {folio, profile} from '../assets/pngs';
 import {useDispatch, useSelector} from 'react-redux';
 import {
+  clearUser,
   selectFuelStationImage,
+  selectFuelStationName,
   selectFuelStationUserDetailsId,
+  selectProfilePic,
   selectToken,
   selectUserName,
   setToken,
 } from '../redux/user-slice';
 import {EmptyListIcon} from '../assets/svgs';
+import {getFuelType} from '../enums/fuel-type';
 
 const Home = ({navigation}) => {
   const {t} = useTranslation();
@@ -38,12 +43,17 @@ const Home = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
   // const fuelStationUserDetailsId = '668f7af43dc912500871a4d4';
   const fuelStationUserDetailsId = useSelector(selectFuelStationUserDetailsId);
   const userName = useSelector(selectUserName);
+  const fuelStationName = useSelector(selectFuelStationName);
   const fuelStationImage = useSelector(selectFuelStationImage);
+  const profileImage = useSelector(selectProfilePic);
+  console.log('PPP: ' + profileImage);
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -62,6 +72,13 @@ const Home = ({navigation}) => {
 
       return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsLoading(true);
+      fetchData();
     }, []),
   );
 
@@ -98,12 +115,29 @@ const Home = ({navigation}) => {
       setIsLoading(false);
       if (response.error_code === 0) {
         setData(response.result);
-        console.log('Data received: ' + data);
+        console.log('Data received: ' + response.result);
         dispatch(setToken(response.token));
       } else if (response.error_code === 4) {
         // console.log('Token: ', response.token);
         dispatch(setToken(response.token));
         setError('No record found against this user');
+      } else if (response.error_code === 2) {
+        // console.log('Token: ', response.token);
+        // dispatch(setToken(response.token));
+        setError('API Error: 2');
+      } else if (response.error_code === 8) {
+        // handleSessionTimeout(navigation);
+        Alert.alert(
+          'Session timed out',
+          'Please login again to continue',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Login'), // Adjust 'LoginScreen' to your login screen's name
+            },
+          ],
+          {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
+        );
       } else {
         setIsError(true);
         setError(response.error_message || 'Something went wrong');
@@ -113,6 +147,13 @@ const Home = ({navigation}) => {
       setIsError(true);
       setError(err.message || 'ERRRROR: Something went wrong');
     }
+  };
+  const profilePath = useSelector(selectFuelStationImage);
+  console.log(profilePath);
+  const handleLogout = () => {
+    dispatch(clearUser());
+    setModalVisible(false);
+    navigation.navigate('Login'); // Adjust 'Login' to your actual login screen name
   };
 
   return (
@@ -131,9 +172,17 @@ const Home = ({navigation}) => {
               {paddingTop: Platform.OS === 'ios' ? 30 : 0},
             ]}>
             <View style={{flexDirection: 'row'}}>
-              <View style={styles.imageWrapper}>
-                <Image source={profile} resizeMethod="contain" />
-              </View>
+              <TouchableOpacity
+                style={styles.imageWrapper}
+                onPress={() => {
+                  setModalVisible(true);
+                }}>
+                <Image
+                  source={{uri: profileImage}}
+                  resizeMethod="fill"
+                  style={styles.image}
+                />
+              </TouchableOpacity>
               <View style={{marginHorizontal: 8}}>
                 <Text style={[styles.welcome, {textAlign: 'left'}]}>
                   {t('homeScreen.welcome')}
@@ -141,11 +190,14 @@ const Home = ({navigation}) => {
                 <Text style={[styles.name]}>{userName}</Text>
               </View>
             </View>
-            <View style={styles.companyImageWrapper}>
-              <Image
-                source={{uri: fuelStationImage}}
-                resizeMode="fill"
-                style={styles.image}></Image>
+            <View style={{alignItems: 'flex-end'}}>
+              <View style={styles.companyImageWrapper}>
+                <Image
+                  source={{uri: fuelStationImage}}
+                  resizeMode="fill"
+                  style={styles.image}></Image>
+              </View>
+              <Text style={[styles.fuelStationName]}>{fuelStationName}</Text>
             </View>
           </View>
           <ConsumptionComponent navigation={navigation} />
@@ -196,14 +248,16 @@ const Home = ({navigation}) => {
                 <TransactionHistoryComponent
                   isCompact={false}
                   numberPlate={item.vehicle?.plate_no ?? 'N/A'}
-                  fuelType={item.fuel_type === 1 ? 'Super' : 'Other'}
+                  fuelType={getFuelType(item.fuel_type)}
                   vehicleName={`${
                     item.vehicle?.vehicle_make_id?.make ?? 'N/A'
-                  } ${item.vehicle?.vehicle_model_id?.model ?? 'N/A'}`}
+                  } ${item.vehicle?.vehicle_model_id?.model ?? ''} ${
+                    item.vehicle?.vehicle_variant_id?.variant ?? ''
+                  }`}
                   transactionDateTime={new Date(
                     item.createdAt,
                   ).toLocaleString()}
-                  nozzlePrice={item.nozzle_price?.toFixed(2)}
+                  nozlePrice={item.nozzle_price?.toFixed(2)}
                   quantity={item.litre_fuel}
                   transactionType={item.transaction_type}
                 />
@@ -216,11 +270,73 @@ const Home = ({navigation}) => {
           )}
         </ScrollView>
       </View>
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Do you want to logout?</Text>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setModalVisible(false)}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    flexDirection: 'row',
+  },
+  modalContent: {
+    width: '90%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    fontWeight: '700',
+    color: colors.primaryText,
+  },
+  logoutButton: {
+    backgroundColor: colors.brandAccentColor,
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  cancelButton: {
+    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: colors.primaryText,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.mainBackgroundColor,
@@ -243,15 +359,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+
   welcome: {
     fontSize: 12,
-    color: colors.homeText,
+    color: colors.primaryText,
     width: '100%',
+  },
+  fuelStationName: {
+    // marginTop: 2,
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: colors.primaryText,
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.homeText,
+    color: colors.primaryText,
   },
   companyImageWrapper: {
     // borderWidth: 1,
@@ -274,7 +397,7 @@ const styles = StyleSheet.create({
     marginVertical: 18,
   },
   transactionHistoryText: {
-    color: colors.homeText,
+    color: colors.primaryText,
     fontWeight: '700',
     fontFamily: 'Inter',
     fontSize: 14,
@@ -282,7 +405,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     textDecorationLine: 'underline',
     textDecorationColor: colors.homeText,
-    color: colors.homeText,
+    color: colors.primaryText,
     fontSize: 12,
     fontFamily: 'Inter',
   },

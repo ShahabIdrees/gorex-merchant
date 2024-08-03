@@ -1,4 +1,5 @@
 export const colors = {
+  black: '#000000',
   inputBorderColor: '#D0D5DD',
   labelColor: '#344054',
   placeHolderColor: '#9F9F9F',

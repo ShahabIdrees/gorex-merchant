@@ -4,6 +4,8 @@ import CustomBottomTabBar from './custom-bottom-tab-bar';
 import ConsumptionComponent from './consumption-component';
 import ErrorMessageComponent from './error-message-component';
 import CustomLoadingIndicator from './custom-loading-indicator';
+import SalesComponent from './sales-component';
+import CustomPhoneInput from './custom-phone-input';
 export {
   LoginInput,
   CustomButton,
@@ -11,4 +13,6 @@ export {
   ConsumptionComponent,
   ErrorMessageComponent,
   CustomLoadingIndicator,
+  SalesComponent,
+  CustomPhoneInput,
 };

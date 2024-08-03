@@ -8,17 +8,19 @@ import {colors} from '../utils/colors';
 import globalStyles from '../theme';
 import {useTranslation} from 'react-i18next';
 import {Print} from '../assets/icons';
+import {getFuelType} from '../enums/fuel-type';
 
 const TransactionHistoryComponent = ({
   isCompact = true,
-  numberPlate = 'ABC-5678',
-  fuelType = 'Super',
-  vehicleName = 'Toyota Corolla GLI',
+  numberPlate = 'N/A',
+  fuelType = 'Superair',
+  vehicleName = 'Honda City',
   transactionDateTime = '17 May 2024, 8:43',
-  nozlePrice = '260.9273823',
+  nozlePrice = '0',
   quantity = '29.72637824',
   transactionType = 'undefined',
 }) => {
+  console.log('Fuel type is : ' + fuelType);
   const {t} = useTranslation();
   return (
     <View style={styles.container}>
@@ -33,6 +35,7 @@ const TransactionHistoryComponent = ({
         </Text>
         <Text
           style={[styles.tag, {color: '#5225AD', backgroundColor: '#ECEDF5'}]}>
+          {/* {fuelType === 1 ? 'super' : fuelType === 2 ? 'diesel' : 'N/A'} */}
           {fuelType}
         </Text>
         {/* <Text
@@ -44,7 +47,9 @@ const TransactionHistoryComponent = ({
       <Text style={styles.date}>{transactionDateTime}</Text>
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Nozzle Price</Text>
+          <Text style={styles.statLabel}>
+            {t('transactionDetails.nozzlePrice')}
+          </Text>
           <Text style={styles.statValue}>
             Rs {parseFloat(nozlePrice).toFixed(2)}
           </Text>
@@ -58,19 +63,23 @@ const TransactionHistoryComponent = ({
               borderColor: colors.borderColor,
             },
           ]}>
-          <Text style={styles.statLabel}>Quantity</Text>
+          <Text style={styles.statLabel}>
+            {t('transactionDetails.quantity')}
+          </Text>
           <Text style={styles.statValue}>
             {parseFloat(quantity).toFixed(2)} Ltr
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Total Amount</Text>
+          <Text style={styles.statLabel}>
+            {t('transactionDetails.totalAmount')}
+          </Text>
           <Text style={styles.statValue}>
             Rs {(quantity * nozlePrice).toFixed(2)}
           </Text>
         </View>
       </View>
-      {!isCompact && (
+      {isCompact && (
         <TouchableOpacity
           style={{
             justifyContent: 'center',

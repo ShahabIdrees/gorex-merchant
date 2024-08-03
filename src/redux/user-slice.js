@@ -13,6 +13,7 @@ export const userSlice = createSlice({
     fuel_station_user_details_id: null,
     user_id_fuel_station_user: null,
     fuel_station_id: null,
+    fuelStationName: null,
   },
   reducers: {
     setUser: (state, action) => {
@@ -29,6 +30,7 @@ export const userSlice = createSlice({
         fuel_station_user_details_id: null,
         user_id_fuel_station_user: null,
         fuel_station_id: null,
+        fuelStationName: null,
       };
     },
     setUserId: (state, action) => {
@@ -61,6 +63,9 @@ export const userSlice = createSlice({
     setFuelStationId: (state, action) => {
       state.fuel_station_id = action.payload;
     },
+    setFuelStationName: (state, action) => {
+      state.fuelStationName = action.payload;
+    },
   },
 });
 
@@ -77,6 +82,7 @@ export const {
   setFuelStationUserDetailsId,
   setUserIdFuelStationUser,
   setFuelStationId,
+  setFuelStationName,
 } = userSlice.actions;
 
 // Selectors
@@ -93,5 +99,6 @@ export const selectFuelStationUserDetailsId = state =>
 export const selectUserIdFuelStationUser = state =>
   state.user.user_id_fuel_station_user;
 export const selectFuelStationId = state => state.user.fuel_station_id;
+export const selectFuelStationName = state => state.user.fuelStationName;
 
 export default userSlice.reducer;

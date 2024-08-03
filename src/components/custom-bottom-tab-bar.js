@@ -13,6 +13,7 @@ import {ScreenWidth} from '../utils/constants';
 // import globalStyles from '../theme';
 import {colors} from '../utils/colors';
 import {QR} from '../assets/icons';
+import {GCentral} from '../assets/svgs';
 
 const centerX = ScreenWidth / 2;
 
@@ -80,8 +81,8 @@ const CustomBottomTabBar = ({state, descriptors, navigation}) => {
             <TouchableOpacity
               style={styles.centerIcon}
               onPress={() => navigation.navigate('Scanner')}>
-              {/* <GCentral /> */}
-              <QR />
+              <GCentral />
+              {/* <QR /> */}
             </TouchableOpacity>
           </View>
         </ImageBackground>
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   centerIcon: {
     width: 68,
     height: 68,
-    backgroundColor: colors.brandAccentColor,
+    // backgroundColor: colors.brandAccentColor,
     borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',

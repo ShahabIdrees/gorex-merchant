@@ -7,10 +7,11 @@ import {
   Text,
   SafeAreaView,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import TransactionHistoryComponent from '../components/transaction-history-component';
 import TransactionHistoryService from '../api/transaction-history';
-import {CommonActions, useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   selectFuelStationUserDetailsId,
   selectToken,
@@ -18,8 +19,10 @@ import {
 } from '../redux/user-slice';
 import {useDispatch, useSelector} from 'react-redux';
 import {EmptyListIcon} from '../assets/svgs';
+import {handleSessionTimeout} from '../utils/helper-functions';
+import {getFuelType} from '../enums/fuel-type';
 
-const History = () => {
+const History = ({navigation}) => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +61,19 @@ const History = () => {
       } else if (response.error_code === 4) {
         dispatch(setToken(response.token));
         setError('No transaction record found');
+      } else if (response.error_code === 8) {
+        // handleSessionTimeout(navigation);
+        Alert.alert(
+          'Session timed out',
+          'Please login again to continue',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Login'), // Adjust 'LoginScreen' to your login screen's name
+            },
+          ],
+          {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
+        );
       } else {
         setIsError(true);
         setError(response.error_message || 'Something went wrong');
@@ -82,6 +98,8 @@ const History = () => {
 
   useFocusEffect(
     useCallback(() => {
+      setIsRefreshing(true);
+      // setIsLoading(true);
       fetchData(true);
     }, []),
   );
@@ -130,14 +148,14 @@ const History = () => {
           keyExtractor={item => item._id}
           renderItem={({item}) => (
             <TransactionHistoryComponent
-              isCompact={true}
+              isCompact={false}
               numberPlate={item.vehicle?.plate_no ?? 'N/A'}
-              fuelType={item.fuel_type === 1 ? 'Super' : 'Other'}
+              fuelType={getFuelType(item.fuel_type)}
               vehicleName={`${item.vehicle?.vehicle_make_id?.make ?? 'N/A'} ${
-                item.vehicle?.vehicle_model_id?.model ?? 'N/A'
-              }`}
+                item.vehicle?.vehicle_model_id?.model ?? ''
+              } ${item.vehicle?.vehicle_variant_id?.variant ?? ''}`}
               transactionDateTime={new Date(item.createdAt).toLocaleString()}
-              nozzlePrice={item.nozzle_price.toFixed(2)}
+              nozlePrice={item.nozzle_price.toFixed(2)}
               quantity={item.litre_fuel}
               transactionType={item.transaction_type}
             />

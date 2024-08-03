@@ -9,8 +9,12 @@ import {
   Dimensions,
   BackHandler,
   ActivityIndicator,
+  LayoutAnimation,
+  Alert,
 } from 'react-native';
 import {colors} from '../utils/colors';
+import {Base64} from 'js-base64';
+
 import {ArrowLeft, CameraIcon} from '../assets/icons';
 import {
   Camera,
@@ -18,9 +22,9 @@ import {
   useCodeScanner,
 } from 'react-native-vision-camera';
 import {usePermissions, EPermissionTypes} from '../utils/use-permissions';
-import {useIsFocused} from '@react-navigation/native';
+import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import TransactionService from '../api/transaction';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   selectFuelStationUserDetailsId,
   selectToken,
@@ -28,6 +32,15 @@ import {
   selectUserIdFuelStationUser,
 } from '../redux/user-slice';
 import {ErrorMessageComponent} from '../components';
+import {
+  setFuelType,
+  setLitreFuel,
+  setReceipt,
+  setTransactionType,
+} from '../redux/receipt-slice';
+import {handleSessionTimeout} from '../utils/helper-functions';
+import {getFuelType} from '../enums/fuel-type';
+import {t} from 'i18next';
 
 const {width} = Dimensions.get('window');
 
@@ -44,7 +57,7 @@ const Scanner = ({navigation}) => {
   const isFocused = useIsFocused();
   const [isCodeScanned, setIsCodeScanned] = useState(false);
   const user = useSelector(selectUser);
-  const [isOnPrimeTransaction, setIsOnPrimeTransaction] = useState(false);
+  const [isOnPrimeTransaction, setIsOnPrimeTransaction] = useState(true);
   const token = useSelector(selectToken);
   const user_id_fuel_station_user = useSelector(selectUserIdFuelStationUser);
   const fuel_station_user_detail_id = useSelector(
@@ -52,45 +65,98 @@ const Scanner = ({navigation}) => {
   );
   const fuel_station_id = user?.fuel_station_id;
   const [errorMessage, setErrorMessage] = useState(null);
+  useEffect(() => {
+    let timer;
+    if (errorMessage) {
+      timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 4000); // 4000 milliseconds = 4 seconds
+    }
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // Reset error message
+  //     setErrorMessage(null);
+
+  //     // Restart camera
+  //     setIsCameraInitialized(false);
+  //     setIsCodeScanned(false);
+  //     setIsActive(true);
+
+  //     return () => {
+  //       // Clean up or reset states if necessary
+  //       setIsActive(false);
+  //     };
+  //   }, []),
+  // );
   const initiateTransaction = async scannedData => {
-    console.log('Parsed scanned data: ', scannedData); // Add this line
-    const transaction_type = isOnPrimeTransaction ? 'On Prime' : 'Off Prime';
-    const transactionData = {
-      user_id_fuel_station_user,
-      fuel_station_user_detail_id,
-      fuel_station_id,
-      transaction_type,
-      ...(isOnPrimeTransaction
-        ? {
-            //Daily limit error should use 1
-            // litre_fuel: 1,
-            litre_fuel: scannedData?.litreFuel,
-            user_id_employee_corporate: scannedData?.userId,
-            employee_id: scannedData?.employeeId,
-            vehicle_id: scannedData?.vehicleId,
-            corporate_id: scannedData?.corporateId,
-            // fuel_type: scannedData?.fuelType,
-            //mismatch on the backend "Sending Super receiveing 1"
-            fuel_type: 1,
-          }
-        : {
-            static_qr_id: scannedData?.static_qr_id,
-          }),
-    };
-
-    console.log('Transaction Data:', transactionData); // Add this line
-
     try {
+      const transaction_type = scannedData?.transaction_type;
+
+      // Common fields for both "On Prime" and "Off Prime"
+      const transactionData = {
+        user_id_fuel_station_user,
+        fuel_station_user_detail_id,
+        fuel_station_id,
+        transaction_type,
+      };
+
+      if (transaction_type === 'On Prime') {
+        // Fields specific to "On Prime" transactions
+        Object.assign(transactionData, {
+          litre_fuel: scannedData?.litreFuel,
+          user_id_employee_corporate: scannedData?.userId,
+          employee_id: scannedData?.employeeId,
+          vehicle_id: scannedData?.vehicleId,
+          corporate_id: scannedData?.corporateId,
+          fuel_type: getFuelType(scannedData?.fuelType),
+          transaction_unique_id: scannedData?.transactionId,
+        });
+        setIsOnPrimeTransaction(true);
+      } else if (transaction_type === 'Off Prime') {
+        // Fields specific to "Off Prime" transactions
+        Object.assign(transactionData, {
+          static_qr_id: scannedData?.id,
+        });
+        setIsOnPrimeTransaction(false);
+      }
+
       const response = await TransactionService.postTransaction(
         token,
         transactionData,
       );
-      console.log('Transaction response:', response);
       setIsCodeScanned(false);
       setIsActive(true);
+
       if (response.error_code === 0) {
-        setIsActive(false);
+        const vehicleData = response.result?.vehicle?.[0];
+        const receiptData = {
+          transaction_type: response.result?.transaction_type,
+          litre_fuel: response.result?.litre_fuel,
+          fuel_type: response.result?.fuel_type,
+          nozzle_price: response.result?.nozzle_price,
+          createdAt: response.result?.createdAt,
+          vehicle_make: vehicleData?.vehicle_make_id?.make || 'Unknown',
+          vehicle_model: vehicleData?.vehicle_model_id?.model || 'Unknown',
+          plate_no: vehicleData?.plate_no || 'Unknown',
+          vehicle_variant:
+            vehicleData?.vehicle_variant_id?.variant || 'Unknown',
+        };
+        dispatch(setReceipt(receiptData));
         navigation.navigate('RefillSuccessReceipt');
+      } else if (response.error_code === 8) {
+        Alert.alert(
+          'Session timed out',
+          'Please login again to continue',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Login'),
+            },
+          ],
+          {cancelable: false},
+        );
       } else {
         setErrorMessage(response.message);
       }
@@ -103,11 +169,9 @@ const Scanner = ({navigation}) => {
     askPermissions()
       .then(result => {
         setPermissionStatus(result.type);
-        console.log('Camera permission status:', result.type);
       })
       .catch(error => {
         setPermissionStatus(error.type);
-        console.log('Camera permission error:', error);
       });
   }, [askPermissions]);
 
@@ -130,39 +194,62 @@ const Scanner = ({navigation}) => {
       .catch(error => setPermissionStatus(error.type));
   };
 
+  const dispatch = useDispatch();
+
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
     onCodeScanned: codes => {
       if (codes.length > 0) {
-        console.log('Scanned QR Code:', codes[0].value);
         try {
-          const scannedData = JSON.parse(codes[0].value);
-          console.log('Parsed Scanned Data:', scannedData); // Add this line
+          // Attempt to decode and parse the scanned data
+          const decodedData = Base64.decode(codes[0].value);
+          const scannedData = JSON.parse(decodedData);
+
+          // Set the scanned content and update state
           setScannedContent(scannedData);
           setIsActive(false);
           setIsCodeScanned(true);
-          setIsOnPrimeTransaction(!scannedData?.static_qr_id);
-          initiateTransaction(scannedData); // Pass scannedData to initiateTransaction
+
+          // Check if the scanned data contains an 'id' field
+          if (!scannedData?.id) {
+            setIsOnPrimeTransaction(true);
+          } else {
+            setIsOnPrimeTransaction(false);
+          }
+
+          // Initiate the transaction with the scanned data
+          initiateTransaction(scannedData);
+
+          console.log('Scanned data:', JSON.stringify(scannedData));
         } catch (error) {
-          setErrorMessage(error);
+          // Handle errors during decoding or parsing
+          // setErrorMessage(
+          //   error.message || 'An error occurred while scanning the QR code',
+          // );
           console.error('Error parsing scanned QR code:', error);
+
+          // Optional: Provide user feedback
+          Alert.alert(
+            'Error',
+            'Failed to process the QR code. Please try again.',
+          );
         }
       }
     },
   });
 
   useEffect(() => {
-    if (isFocused && isCameraInitialized) {
+    if (isCameraInitialized) {
       setIsActive(true);
       setFlash('off');
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     } else {
       setIsActive(false);
     }
-  }, [isFocused, isCameraInitialized]);
+  }, [isCameraInitialized]);
 
   const onInitialized = () => {
     setIsCameraInitialized(true);
-    console.log('Camera initialized');
   };
 
   return isCodeScanned ? (
@@ -174,10 +261,10 @@ const Scanner = ({navigation}) => {
         <View style={styles.headerContainer}>
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => setIsCameraShown(false)}>
+            onPress={() => navigation.goBack()}>
             <ArrowLeft color={colors.black} />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Scan QR Code</Text>
+          <Text style={styles.headerText}>{t('scanner.scanQR')}</Text>
         </View>
         {permissionStatus === null ? (
           <View style={styles.loadingContainer}>
@@ -192,7 +279,7 @@ const Scanner = ({navigation}) => {
           </View>
         ) : (
           <View style={styles.cameraContainer}>
-            {isFocused && device && (
+            {device && (
               <Camera
                 torch={flash}
                 onInitialized={onInitialized}
@@ -201,7 +288,7 @@ const Scanner = ({navigation}) => {
                 style={styles.camera}
                 device={device}
                 codeScanner={codeScanner}
-                isActive={isActive && isFocused && isCameraInitialized}
+                isActive={isActive && isCameraInitialized}
                 onStopped={() => {
                   console.log('Camera Stopped');
                 }}
@@ -216,20 +303,13 @@ const Scanner = ({navigation}) => {
                 <View style={styles.promptContainer}>
                   <CameraIcon />
                   <Text style={styles.scanPrompt}>
-                    Please move your camera over another device’s screen
+                    {t('scanner.cameraPrompt')}
                   </Text>
                 </View>
               </View>
             </View>
           </View>
         )}
-        {/* {scannedContent ? (
-          <View style={styles.scannedContentContainer}>
-            <Text style={styles.scannedContentText}>
-              {JSON.stringify(scannedContent)}
-            </Text>
-          </View>
-        ) : null} */}
       </>
     </SafeAreaView>
   );
@@ -239,13 +319,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-    padding: 20,
+    paddingVertical: 20,
   },
   headerContainer: {
+    zIndex: 9999,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginRight: 30,
+    padding: 20,
   },
   headerText: {
     textAlign: 'center',
@@ -270,18 +352,28 @@ const styles = StyleSheet.create({
   },
   closeButton: {},
   cameraContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    // paddingHorizontal: '10%',
+    // paddingVertical: '40%',
+    flex: 1,
+    // borderWidth: 2,
+    // borderColor: 'green',
   },
   camera: {
-    width: width * 0.75,
-    height: 450,
+    width: '100%',
+    height: '150%',
+    flex: 1,
+    // position: 'absolute',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    height: '100%',
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    // borderWidth: 2,
+    // borderColor: 'red',
   },
   scanArea: {
     width: width * 0.5,
@@ -289,6 +381,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    // borderWidth: 2,
+    // borderColor: 'red',
     bottom: -20,
   },
   corner: {
@@ -325,7 +419,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: -115,
+    // borderWidth: 2,
+    // borderColor: 'red',
+    top: -110,
   },
   scanPrompt: {
     color: 'white',

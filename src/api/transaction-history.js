@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://gorex-api-gateway.gorex.pk/fueling';
+const BASE_URL = 'https://uat-gorex-api-gateway.gorex.pk/fueling';
 
 const TransactionHistoryService = {
   getAllTransactionHistory: async (
@@ -23,7 +23,10 @@ const TransactionHistoryService = {
           fuel_station_user_detail_id: fuelStationUserDetailsId,
         },
       });
-      console.log('Get all history call:', response.data);
+      console.log(
+        'Get all history call:',
+        JSON.stringify(response.data, null, 3),
+      );
       return response.data;
     } catch (error) {
       console.error('Error during merchant employee History call:', error);

@@ -21,6 +21,7 @@ import globalStyles from '../theme';
 // import {selectToken} from '../redux/token-slice';
 // import ConsumptionComponentReal from './consumption-component-real';
 import {colors} from '../utils/colors';
+import SalesComponent from './sales-component';
 
 const {width} = Dimensions.get('window');
 
@@ -119,33 +120,42 @@ const ConsumptionComponent = ({navigation}) => {
                 consumed={item.available_fuel_limit}
                 navigation={navigation}
               /> */}
+              <SalesComponent />
             </View>
           ))}
         </Animated.View>
       )}
 
       <View style={styles.navigationContainer}>
-        <TouchableOpacity onPress={handlePrev} disabled={currentIndex === 0}>
-          {currentIndex === 0 ? <ChevLeftSmall /> : <ChevLeftGreenSmall />}
+        <TouchableOpacity
+          onPress={handlePrev}
+          // disabled={currentIndex === 0}
+          disabled={true}
+          style={{padding: 20}}>
+          {/* {currentIndex === 0 ? <ChevLeftSmall /> : <ChevLeftGreenSmall />} */}
+          <ChevLeftSmall />
         </TouchableOpacity>
 
         <View style={styles.titleContainer}>
           <Text style={[styles.titleText, globalStyles.text]}>
-            {t('home.fuelConsumption')}
+            {t('homeScreen.salesOverview')}
           </Text>
-          <Text style={[styles.subtitleText, globalStyles.text]}>
+          {/* <Text style={[styles.subtitleText, globalStyles.text]}>
             {getCurrentMonthAndYear()}
-          </Text>
+          </Text> */}
         </View>
 
         <TouchableOpacity
           onPress={handleNext}
-          disabled={currentIndex === data.length - 1}>
-          {currentIndex === data.length - 1 ? (
+          style={{padding: 20}}
+          // disabled={currentIndex === data.length - 1}>
+          disabled={true}>
+          {/* {currentIndex === data.length - 1 ? (
             <ChevRightSmall />
           ) : (
             <ChevRigthGreenSmall />
-          )}
+          )} */}
+          <ChevRightSmall />
         </TouchableOpacity>
       </View>
     </View>
@@ -167,7 +177,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
     borderRadius: 12,
-    height: 300,
+    height: 350,
   },
   animatedView: {
     flexDirection: 'row',
@@ -179,8 +189,9 @@ const styles = StyleSheet.create({
   navigationContainer: {
     flexDirection: 'row',
     width: '100%',
+    alignItems: 'center',
     justifyContent: 'space-around',
-    marginTop: 27,
+    marginTop: 14,
   },
   titleContainer: {
     alignItems: 'center',
@@ -188,8 +199,8 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.homeText,
-    marginBottom: 2,
+    // marginBottom: 12,
+    color: colors.primaryText,
   },
   subtitleText: {
     fontSize: 10,

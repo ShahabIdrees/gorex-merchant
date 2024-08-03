@@ -7,7 +7,7 @@ const initialState = {
     fuel_type: null, //on prime
     static_qr_id: null, //off prime
     vehicle_id: null, //on prime
-    corporate_id: null, //on prime
+    // corporate_id: null, //on prime
   },
 };
 

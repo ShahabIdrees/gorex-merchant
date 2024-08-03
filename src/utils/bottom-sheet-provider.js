@@ -14,7 +14,8 @@ import {
   TouchableWithoutFeedback,
   Animated,
 } from 'react-native';
-import GeneralBottomSheet from '../components/general-bottom-sheet';
+// import GeneralBottomSheet from '../components/general-bottom-sheet';
+import {ForgotPasswordSheet} from '../components/bottom-sheets';
 
 // import {FileRound, Lock, QRIconBottomSheet, Timer} from '../assets';
 
@@ -87,70 +88,8 @@ export const BottomSheetProvider = ({children}) => {
   // Render specific content based on bottomSheetName
   const renderSheetContent = useCallback(() => {
     switch (sheetConfig.bottomSheetName) {
-      case 'Filter':
-        return <Filter {...sheetConfig.params} />;
-      case 'FeedbackCompact':
-        return <FeedbackCompact {...sheetConfig.params} />;
-      case 'Feedback':
-        return <FeedbackCompact isCompact={false} {...sheetConfig.params} />;
-      case 'TPinVerification':
-        return (
-          <GeneralBottomSheet
-            content={<TpinSheetContent {...sheetConfig.params} />}
-            icon={<Lock />}
-          />
-        );
-      case 'TPinVerificationQR':
-        return (
-          <GeneralBottomSheet
-            content={
-              <TpinSheetContent
-                isPresentedFromQR={true}
-                {...sheetConfig.params}
-              />
-            }
-            icon={<Lock />}
-          />
-        );
-      case 'QRSheet':
-        return (
-          <GeneralBottomSheet
-            content={<QrSheetContent {...sheetConfig.params} />}
-            icon={<QRIconBottomSheet />}
-          />
-        );
-      case 'TimerSheet':
-        return (
-          <GeneralBottomSheet
-            content={<TimerSheetContent {...sheetConfig.params} />}
-            icon={<Timer />}
-          />
-        );
-      case 'DeactivateSheet':
-        return <DeactivateSheetContent {...sheetConfig.params} />;
-      case 'OTPSheet':
-        return (
-          <GeneralBottomSheet
-            content={<OtpSheetContent {...sheetConfig.params} />}
-            icon={<Lock />}
-          />
-        );
-      case 'initiateRequestSheet':
-        return (
-          <GeneralBottomSheet
-            content={<InitiateRequestSheetContent {...sheetConfig.params} />}
-            icon={<FileRound />}
-          />
-        );
-      case 'initiateRequestSheetQR':
-        return (
-          <GeneralBottomSheet
-            content={<InitiateRequestSheetContent {...sheetConfig.params} />}
-            icon={<FileRound />}
-          />
-        );
-      case 'TransactionFailedSheet':
-        return <TransactionFailedScreen />;
+      case 'ForgotPasswordSheet':
+        return <ForgotPasswordSheet />;
       default:
         return null;
     }
