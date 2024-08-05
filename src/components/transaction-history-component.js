@@ -12,7 +12,7 @@ import {getFuelType} from '../enums/fuel-type';
 
 const TransactionHistoryComponent = ({
   isCompact = true,
-  numberPlate = 'N/A',
+  numberPlate = '',
   fuelType = 'Superair',
   vehicleName = 'Honda City',
   transactionDateTime = '17 May 2024, 8:43',

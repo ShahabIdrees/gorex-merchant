@@ -22,7 +22,7 @@ const TransactionService = {
       );
       return response.data;
     } catch (error) {
-      console.error('Error during posting the transaction:', error);
+      console.error('Error posting the transaction:', error);
       throw error;
     }
   },

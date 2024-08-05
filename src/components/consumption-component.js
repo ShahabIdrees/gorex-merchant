@@ -13,6 +13,7 @@ import {
   ChevLeftSmall,
   ChevRightSmall,
   ChevRigthGreenSmall,
+  FuelStationPlaceHolder,
 } from '../assets/icons';
 import {useTranslation} from 'react-i18next';
 import globalStyles from '../theme';
@@ -113,6 +114,7 @@ const ConsumptionComponent = ({navigation}) => {
                   {item.fuel_limit - item.available_fuel_limit}/
                   {item.fuel_limit} */}
                 {/* </Text> */}
+                <FuelStationPlaceHolder />
               </View>
 
               {/* <ConsumptionComponentReal
@@ -120,19 +122,19 @@ const ConsumptionComponent = ({navigation}) => {
                 consumed={item.available_fuel_limit}
                 navigation={navigation}
               /> */}
-              <SalesComponent />
+              {/* <SalesComponent /> */}
             </View>
           ))}
         </Animated.View>
       )}
 
-      <View style={styles.navigationContainer}>
+      {/* <View style={styles.navigationContainer}>
         <TouchableOpacity
           onPress={handlePrev}
           // disabled={currentIndex === 0}
           disabled={true}
           style={{padding: 20}}>
-          {/* {currentIndex === 0 ? <ChevLeftSmall /> : <ChevLeftGreenSmall />} */}
+          {/* {currentIndex === 0 ? <ChevLeftSmall /> : <ChevLeftGreenSmall />} 
           <ChevLeftSmall />
         </TouchableOpacity>
 
@@ -142,7 +144,7 @@ const ConsumptionComponent = ({navigation}) => {
           </Text>
           {/* <Text style={[styles.subtitleText, globalStyles.text]}>
             {getCurrentMonthAndYear()}
-          </Text> */}
+          </Text> 
         </View>
 
         <TouchableOpacity
@@ -154,10 +156,10 @@ const ConsumptionComponent = ({navigation}) => {
             <ChevRightSmall />
           ) : (
             <ChevRigthGreenSmall />
-          )} */}
+          )} 
           <ChevRightSmall />
         </TouchableOpacity>
-      </View>
+      </View>*/}
     </View>
   );
 };

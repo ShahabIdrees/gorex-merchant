@@ -30,7 +30,10 @@ import {
   setUserName,
 } from '../redux/user-slice';
 import {BOP} from '../assets/svgs';
-import {validatePakistaniNumber} from '../utils/helper-functions';
+import {
+  validatePakistaniNumber,
+  validateSaudiNumber,
+} from '../utils/helper-functions';
 
 const Login = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -50,8 +53,15 @@ const Login = ({navigation}) => {
       setError(t('errorMessages.login.invalidPhoneNumber'));
       return;
     }
-    if (countryCode === 92 || countryCode === '+92') {
+    if (callingCode === '92' || callingCode === '+92') {
       const isValidPhoneNumber = validatePakistaniNumber(phoneNumber);
+      if (!isValidPhoneNumber) {
+        setIsError(true);
+        setError(t('errorMessages.login.invalidPhoneNumber'));
+        return;
+      }
+    } else if (callingCode === '+966' || callingCode === '966') {
+      const isValidPhoneNumber = validateSaudiNumber(fullPhoneNumber);
       if (!isValidPhoneNumber) {
         setIsError(true);
         setError(t('errorMessages.login.invalidPhoneNumber'));
@@ -129,9 +139,9 @@ const Login = ({navigation}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.prompt}>{t('login.loginPrompt')}</Text>
+      {isError ? <ErrorMessageComponent text={error} /> : null}
       <Text style={[styles.label, {color: colors.primaryText}]}>Login</Text>
 
-      {isError ? <ErrorMessageComponent text={error} /> : null}
       <CustomPhoneInput
         countryCode={countryCode}
         callingCode={callingCode}
@@ -143,6 +153,7 @@ const Login = ({navigation}) => {
       />
       <LoginInput
         marginTop={2}
+        maxLength={12 - callingCode.length}
         label={'Password'}
         placeholder={'enter password'}
         isSecureEntry={true}

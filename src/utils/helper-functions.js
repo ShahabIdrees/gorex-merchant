@@ -18,3 +18,7 @@ export const validatePakistaniNumber = number => {
   const regex = /^3\d{9}$/;
   return regex.test(number);
 };
+export const validateSaudiNumber = number => {
+  const regex = /^(009665|9665|\+9665|05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/;
+  return regex.test(number);
+};

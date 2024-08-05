@@ -44,7 +44,7 @@ const RefillSuccessReceipt = ({navigation}) => {
   const vehiclePlate = useSelector(selectPlateNo);
   const vehicleVariant = useSelector(selectVehicleVariant);
 
-  const vehicleName = `${vehicleMake} ${vehicleModel} ${vehicleVariant}`;
+  // const vehicleName = `${vehicleMake} ${vehicleModel} ${vehicleVariant}`;
   const transactionDateTime = new Date(createdAt).toLocaleString();
 
   // useEffect(() => {
@@ -116,7 +116,10 @@ const RefillSuccessReceipt = ({navigation}) => {
             fuelType={getFuelType(fuelType)}
             quantity={litreFuel}
             transactionType={transactionType}
-            vehicleName={vehicleName}
+            // vehicleName={vehicleName}
+            vehicleName={`${vehicleMake ?? 'N/A'} ${vehicleModel ?? ''} ${
+              vehicleVariant ?? ''
+            }`}
             transactionDateTime={transactionDateTime}
             nozlePrice={nozzlePrice}
             numberPlate={vehiclePlate}

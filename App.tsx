@@ -5,9 +5,10 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -16,7 +17,7 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
 
 import {
   Colors,
@@ -28,11 +29,12 @@ import {
 import { MainStackNavigator } from './src/navigation';
 import { I18nextProvider } from 'react-i18next';
 import i18next from './src/services/i18next';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import {store} from './src/store';
 import { persistStore } from 'redux-persist';
 import { PersistGate } from 'redux-persist/integration/react';
 import { BottomSheetProvider } from './src/utils/bottom-sheet-provider';
+import { selectToken } from './src/redux/user-slice';
 
 let persistedStore = persistStore(store);
 
@@ -45,6 +47,28 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+
+//   const token = useSelector(selectToken);
+//   const dispatch = useDispatch();
+//   const navigation = useNavigation();
+
+// useEffect(() => {
+//   if (token === null) {
+//     Alert.alert(
+//       'Session Timed Out',
+//       'Your session has expired. Please log in again.',
+//       [
+//         {
+//           text: 'OK',
+//           onPress: () => {
+//             // dispatch(); // Clear session data
+//             navigation.navigate('Login'); // Navigate to signup or login screen
+//           },
+//         },
+//       ],
+//     );
+//   }
+// }, [token, dispatch, navigation]);
   return (
     <Provider store={store}>
       <PersistGate persistor={persistedStore}>

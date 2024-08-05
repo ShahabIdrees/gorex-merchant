@@ -74,9 +74,10 @@ const History = ({navigation}) => {
           ],
           {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
         );
+        dispatch(setToken(null));
       } else {
         setIsError(true);
-        setError(response.error_message || 'Something went wrong');
+        setError(response.message || 'Something went wrong');
       }
     } catch (err) {
       setIsLoading(false);
@@ -149,9 +150,9 @@ const History = ({navigation}) => {
           renderItem={({item}) => (
             <TransactionHistoryComponent
               isCompact={false}
-              numberPlate={item.vehicle?.plate_no ?? 'N/A'}
+              numberPlate={item.vehicle?.plate_no ?? ''}
               fuelType={getFuelType(item.fuel_type)}
-              vehicleName={`${item.vehicle?.vehicle_make_id?.make ?? 'N/A'} ${
+              vehicleName={`${item.vehicle?.vehicle_make_id?.make ?? ''} ${
                 item.vehicle?.vehicle_model_id?.model ?? ''
               } ${item.vehicle?.vehicle_variant_id?.variant ?? ''}`}
               transactionDateTime={new Date(item.createdAt).toLocaleString()}

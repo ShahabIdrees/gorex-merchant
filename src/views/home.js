@@ -35,6 +35,7 @@ import {
 } from '../redux/user-slice';
 import {EmptyListIcon} from '../assets/svgs';
 import {getFuelType} from '../enums/fuel-type';
+import {FuelStationPlaceHolder} from '../assets/icons';
 
 const Home = ({navigation}) => {
   const {t} = useTranslation();
@@ -120,11 +121,11 @@ const Home = ({navigation}) => {
       } else if (response.error_code === 4) {
         // console.log('Token: ', response.token);
         dispatch(setToken(response.token));
-        setError('No record found against this user');
+        setError(response.message);
       } else if (response.error_code === 2) {
         // console.log('Token: ', response.token);
         // dispatch(setToken(response.token));
-        setError('API Error: 2');
+        setError(response.message);
       } else if (response.error_code === 8) {
         // handleSessionTimeout(navigation);
         Alert.alert(
@@ -138,6 +139,7 @@ const Home = ({navigation}) => {
           ],
           {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
         );
+        dispatch(setToken(null));
       } else {
         setIsError(true);
         setError(response.error_message || 'Something went wrong');
@@ -200,7 +202,8 @@ const Home = ({navigation}) => {
               <Text style={[styles.fuelStationName]}>{fuelStationName}</Text>
             </View>
           </View>
-          <ConsumptionComponent navigation={navigation} />
+          {/* <ConsumptionComponent navigation={navigation} /> */}
+          <FuelStationPlaceHolder style={{alignSelf: 'center'}} />
           <View style={{marginHorizontal: -20, padding: 20}}>
             <ScrollView
               horizontal={true}
@@ -247,13 +250,11 @@ const Home = ({navigation}) => {
               renderItem={({item}) => (
                 <TransactionHistoryComponent
                   isCompact={false}
-                  numberPlate={item.vehicle?.plate_no ?? 'N/A'}
+                  numberPlate={item.vehicle?.plate_no}
                   fuelType={getFuelType(item.fuel_type)}
-                  vehicleName={`${
-                    item.vehicle?.vehicle_make_id?.make ?? 'N/A'
-                  } ${item.vehicle?.vehicle_model_id?.model ?? ''} ${
-                    item.vehicle?.vehicle_variant_id?.variant ?? ''
-                  }`}
+                  vehicleName={`${item.vehicle?.vehicle_make_id?.make ?? ''} ${
+                    item.vehicle?.vehicle_model_id?.model ?? ''
+                  } ${item.vehicle?.vehicle_variant_id?.variant ?? ''}`}
                   transactionDateTime={new Date(
                     item.createdAt,
                   ).toLocaleString()}

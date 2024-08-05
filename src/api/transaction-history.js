@@ -11,6 +11,12 @@ const TransactionHistoryService = {
   ) => {
     console.log('FSUDI: ' + fuelStationUserDetailsId);
     const url = `${BASE_URL}/api/transaction/get-all-transaction-by-fuel-station-user-id`;
+
+    console.log({
+      page: page,
+      limit: limit,
+      fuel_station_user_detail_id: fuelStationUserDetailsId,
+    });
     try {
       console.log('URL:', url);
       const response = await axios.get(url, {
