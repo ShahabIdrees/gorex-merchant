@@ -22,3 +22,14 @@ export const validateSaudiNumber = number => {
   const regex = /^(009665|9665|\+9665|05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/;
   return regex.test(number);
 };
+
+export const formatDateTime = isoString => {
+  const dateObj = new Date(isoString);
+  const options = {year: 'numeric', month: 'short', day: 'numeric'};
+  const formattedDate = dateObj.toLocaleDateString(undefined, options);
+  const formattedTime = dateObj.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return `${formattedDate}, ${formattedTime}`;
+};

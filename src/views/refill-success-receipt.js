@@ -45,7 +45,7 @@ const RefillSuccessReceipt = ({navigation}) => {
   const vehicleVariant = useSelector(selectVehicleVariant);
 
   // const vehicleName = `${vehicleMake} ${vehicleModel} ${vehicleVariant}`;
-  const transactionDateTime = new Date(createdAt).toLocaleString();
+  const transactionDateTime = new Date(createdAt);
 
   // useEffect(() => {
   //   const timer = setTimeout(() => {

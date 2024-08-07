@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   StyleSheet,
@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import {useDispatch} from 'react-redux';
+import CheckBox from '@react-native-community/checkbox';
+import {useDispatch, useSelector} from 'react-redux';
 import {colors} from '../utils/colors';
 import {
   CustomButton,
@@ -20,20 +21,25 @@ import {
 import AuthService from '../api/auth';
 import {CommonActions} from '@react-navigation/native';
 import {
+  selectPhone,
+  selectRememberMe,
+  setPhone,
+  setToken,
+  setUserIdFuelStationUser,
   setFuelStationId,
   setFuelStationImage,
   setFuelStationName,
   setFuelStationUserDetailsId,
   setProfilePic,
-  setToken,
-  setUserIdFuelStationUser,
   setUserName,
+  setRememberMe,
 } from '../redux/user-slice';
 import {BOP} from '../assets/svgs';
 import {
   validatePakistaniNumber,
   validateSaudiNumber,
 } from '../utils/helper-functions';
+import {BASE_URL_FUELING} from '../api/repos';
 
 const Login = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,8 +50,19 @@ const Login = ({navigation}) => {
   const [isError, setIsError] = useState(false);
   const [countryCode, setCountryCode] = useState('PK'); // Default to Pakistan
   const [callingCode, setCallingCode] = useState('92'); // Default calling code for Pakistan
+  const [rememberMe, setRememberme] = useState(false); // New state for Remember Me checkbox
   const {t} = useTranslation();
   const dispatch = useDispatch();
+  const rememberMeState = useSelector(selectRememberMe);
+  const phone = useSelector(selectPhone);
+  console.log('Phone numbner: ' + phone);
+  useEffect(() => {
+    if (phone) {
+      setPhoneNumber(phone);
+      // setFullPhoneNumber(phone);
+    }
+    setRememberme(rememberMeState);
+  }, [phone, rememberMeState]);
 
   const handleLoginPress = async () => {
     if (!fullPhoneNumber) {
@@ -99,16 +116,22 @@ const Login = ({navigation}) => {
         );
         dispatch(
           setProfilePic(
-            `https://uat-gorex-api-gateway.gorex.pk/fueling/${response.result.fuel_station_user_details.image}`,
+            `${BASE_URL_FUELING}/${response.result.fuel_station_user_details.image}`,
           ),
         );
         dispatch(setUserName(response.result.user_name));
         dispatch(
           setFuelStationImage(
-            `https://uat-gorex-api-gateway.gorex.pk/fueling/${response.result.fuel_station.image}`,
+            `${BASE_URL_FUELING}/${response.result.fuel_station.image}`,
           ),
         );
         dispatch(setFuelStationName(response.result?.fuel_station?.name));
+        if (rememberMe) {
+          console.log('We here: ' + phoneNumber);
+          dispatch(setPhone(phoneNumber));
+        } else {
+          dispatch(setPhone(''));
+        }
 
         const resetAction = CommonActions.reset({
           index: 0,
@@ -159,6 +182,17 @@ const Login = ({navigation}) => {
         isSecureEntry={true}
         handleChangeText={setPassword}
       />
+      <View style={styles.rememberMeContainer}>
+        <CheckBox
+          value={rememberMe}
+          onValueChange={value => {
+            setRememberme(value);
+            dispatch(setRememberMe(value));
+          }}
+          tintColors={{true: colors.brandAccentColor, false: colors.grey}}
+        />
+        <Text style={styles.rememberMeText}>Remember Me</Text>
+      </View>
       {isLoading ? (
         <ActivityIndicator
           size={Platform.OS === 'ios' ? 'large' : 50}
@@ -221,6 +255,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  rememberMeText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: colors.primaryText,
   },
 });
 

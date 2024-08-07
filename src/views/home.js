@@ -255,9 +255,7 @@ const Home = ({navigation}) => {
                   vehicleName={`${item.vehicle?.vehicle_make_id?.make ?? ''} ${
                     item.vehicle?.vehicle_model_id?.model ?? ''
                   } ${item.vehicle?.vehicle_variant_id?.variant ?? ''}`}
-                  transactionDateTime={new Date(
-                    item.createdAt,
-                  ).toLocaleString()}
+                  transactionDateTime={item.createdAt}
                   nozlePrice={item.nozzle_price?.toFixed(2)}
                   quantity={item.litre_fuel}
                   transactionType={item.transaction_type}

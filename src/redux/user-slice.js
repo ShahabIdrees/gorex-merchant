@@ -14,10 +14,14 @@ export const userSlice = createSlice({
     user_id_fuel_station_user: null,
     fuel_station_id: null,
     fuelStationName: null,
+    rememberMe: false,
   },
   reducers: {
     setUser: (state, action) => {
       return {...state, ...action.payload};
+    },
+    setRememberMe: (state, action) => {
+      state.rememberMe = action.payload;
     },
     clearUser: state => {
       return {
@@ -25,12 +29,13 @@ export const userSlice = createSlice({
         user_name: null,
         token: null,
         is_verified: null,
-        phone: null,
         profile_pic: null,
         fuel_station_user_details_id: null,
         user_id_fuel_station_user: null,
         fuel_station_id: null,
         fuelStationName: null,
+        rememberMe: state.rememberMe,
+        phone: state.phone,
       };
     },
     setUserId: (state, action) => {
@@ -83,6 +88,7 @@ export const {
   setUserIdFuelStationUser,
   setFuelStationId,
   setFuelStationName,
+  setRememberMe,
 } = userSlice.actions;
 
 // Selectors
@@ -100,5 +106,6 @@ export const selectUserIdFuelStationUser = state =>
   state.user.user_id_fuel_station_user;
 export const selectFuelStationId = state => state.user.fuel_station_id;
 export const selectFuelStationName = state => state.user.fuelStationName;
+export const selectRememberMe = state => state.user.rememberMe;
 
 export default userSlice.reducer;

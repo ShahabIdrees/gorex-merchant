@@ -1,11 +1,12 @@
 import axios from 'axios';
+import {BASE_URL_AUTH} from './repos';
 
 const BASE_URL = 'https://uat-gorex-api-gateway.gorex.pk/auth';
 
 const AuthService = {
   merchantEmployeeLogin: async (phone, password) => {
     console.log('phone: ' + phone);
-    const url = `${BASE_URL}/api/user/login-fuel-station-mobile-app`;
+    const url = `${BASE_URL_AUTH}/api/user/login-fuel-station-mobile-app`;
 
     try {
       console.log('URL:', url);

@@ -1,10 +1,11 @@
 import axios from 'axios';
+import {BASE_URL_FUELING} from './repos';
 
 const BASE_URL = 'https://uat-gorex-api-gateway.gorex.pk/fueling';
 
 const TransactionService = {
   postTransaction: async (token, transactionData) => {
-    const url = `${BASE_URL}/api/transaction/transaction-post`;
+    const url = `${BASE_URL_FUELING}/api/transaction/transaction-post`;
     try {
       console.log('URL:', url);
       console.log(

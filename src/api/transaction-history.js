@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {BASE_URL_FUELING} from './repos';
 
 const BASE_URL = 'https://uat-gorex-api-gateway.gorex.pk/fueling';
 
@@ -10,7 +11,7 @@ const TransactionHistoryService = {
     limit,
   ) => {
     console.log('FSUDI: ' + fuelStationUserDetailsId);
-    const url = `${BASE_URL}/api/transaction/get-all-transaction-by-fuel-station-user-id`;
+    const url = `${BASE_URL_FUELING}/api/transaction/get-all-transaction-by-fuel-station-user-id`;
 
     console.log({
       page: page,

@@ -9,6 +9,7 @@ import globalStyles from '../theme';
 import {useTranslation} from 'react-i18next';
 import {Print} from '../assets/icons';
 import {getFuelType} from '../enums/fuel-type';
+import {formatDateTime} from '../utils/helper-functions';
 
 const TransactionHistoryComponent = ({
   isCompact = true,
@@ -22,6 +23,7 @@ const TransactionHistoryComponent = ({
 }) => {
   console.log('Fuel type is : ' + fuelType);
   const {t} = useTranslation();
+  const formattedDate = formatDateTime(transactionDateTime);
   return (
     <View style={styles.container}>
       <View style={styles.tagContainer}>
@@ -44,7 +46,7 @@ const TransactionHistoryComponent = ({
         </Text> */}
       </View>
       <Text style={styles.vehicleName}>{vehicleName}</Text>
-      <Text style={styles.date}>{transactionDateTime}</Text>
+      <Text style={styles.date}>{formattedDate}</Text>
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>
