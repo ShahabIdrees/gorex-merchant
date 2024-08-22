@@ -52,7 +52,8 @@ const CustomPhoneInput = ({
         placeholderTextColor={colors.placeHolderColor}
         keyboardType="phone-pad"
         maxLength={maxLength}
-        onChangeText={text => setPhoneNumber(text.replace(/\D/g, ''))}
+        // onChangeText={text => setPhoneNumber(text.replace(/\D/g, ''))}
+        onChangeText={setPhoneNumber}
         value={phoneNumber}
       />
     </View>

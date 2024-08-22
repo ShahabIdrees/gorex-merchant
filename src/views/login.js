@@ -40,6 +40,7 @@ import {
   validateSaudiNumber,
 } from '../utils/helper-functions';
 import {BASE_URL_FUELING} from '../api/repos';
+import ErrorCode from '../enums/error-codes';
 
 const Login = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +58,7 @@ const Login = ({navigation}) => {
   const phone = useSelector(selectPhone);
   console.log('Phone numbner: ' + phone);
   useEffect(() => {
-    if (phone) {
+    if (phone && rememberMeState) {
       setPhoneNumber(phone);
       // setFullPhoneNumber(phone);
     }
@@ -101,7 +102,8 @@ const Login = ({navigation}) => {
         password,
       );
       setIsLoading(false);
-      if (response.error_code === 0) {
+      if (response.error_code === ErrorCode.SUCCESS) {
+        dispatch(setPhone(phone));
         dispatch(setToken(response.result.token));
         dispatch(setUserIdFuelStationUser(response.result._id));
         dispatch(
@@ -138,10 +140,10 @@ const Login = ({navigation}) => {
           routes: [{name: 'Main'}],
         });
         navigation.dispatch(resetAction);
-      } else if (response.error_code === 3) {
+      } else if (response.error_code === ErrorCode.INVALID_CREDENTIALS) {
         setIsError(true);
         setError(t('errorMessages.login.invalidCredentials'));
-      } else if (response.error_code === 4) {
+      } else if (response.error_code === ErrorCode.NOT_EXIST) {
         setIsError(true);
         setError(t('errorMessages.login.notRegistered'));
       } else {
@@ -176,7 +178,7 @@ const Login = ({navigation}) => {
       />
       <LoginInput
         marginTop={2}
-        maxLength={12 - callingCode.length}
+        // maxLength={12 - callingCode.length}
         label={'Password'}
         placeholder={'enter password'}
         isSecureEntry={true}

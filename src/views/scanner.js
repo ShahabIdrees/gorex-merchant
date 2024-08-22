@@ -490,6 +490,7 @@ import {ArrowLeft, CameraIcon} from '../assets/icons';
 import {useTranslation} from 'react-i18next';
 import {Base64} from 'js-base64';
 import {useFocusEffect} from '@react-navigation/native';
+import ErrorCode from '../enums/error-codes';
 const {width} = Dimensions.get('window');
 
 const Scanner = ({navigation}) => {
@@ -580,6 +581,7 @@ const Scanner = ({navigation}) => {
           corporate_id: data?.corporateId,
           fuel_type: getFuelType(data?.fuelType),
           transaction_unique_id: data?.transactionId,
+          vehicle_type: data?.vehicleType,
         });
         setIsOnPrimeTransaction(true);
       } else if (transaction_type === 'Off Prime') {
@@ -595,7 +597,7 @@ const Scanner = ({navigation}) => {
       );
       setIsCodeScanned(false);
 
-      if (response.error_code === 0) {
+      if (response.error_code === ErrorCode.SUCCESS) {
         setIsActive(false);
         setIsCodeScanned(false);
 
@@ -613,7 +615,7 @@ const Scanner = ({navigation}) => {
         };
         dispatch(setReceipt(receiptData));
         navigation.navigate('RefillSuccessReceipt');
-      } else if (response.error_code === 8) {
+      } else if (response.error_code === ErrorCode.TOKEN_INVALID) {
         Alert.alert(
           'Session timed out',
           'Please login again to continue',

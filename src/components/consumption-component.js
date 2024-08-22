@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  Alert,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
-
 import {
   ChevLeftGreenSmall,
   ChevLeftSmall,
@@ -17,66 +19,140 @@ import {
 } from '../assets/icons';
 import {useTranslation} from 'react-i18next';
 import globalStyles from '../theme';
-// import HomeService from '../api/home';
-// import {useSelector} from 'react-redux';
-// import {selectToken} from '../redux/token-slice';
-// import ConsumptionComponentReal from './consumption-component-real';
 import {colors} from '../utils/colors';
 import SalesComponent from './sales-component';
+import SalesService from '../api/sales';
+import ErrorCode from '../enums/error-codes';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  selectFuelStationUserDetailsId,
+  selectToken,
+  setToken,
+} from '../redux/user-slice';
+import Dropdown from './dropdown';
+import moment from 'moment';
+import {useFocusEffect} from '@react-navigation/native';
 
 const {width} = Dimensions.get('window');
 
 const ConsumptionComponent = ({navigation}) => {
-  // const token = useSelector(selectToken);
-  const [data, setData] = useState([1, 2, 3]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
   const {t} = useTranslation();
+  const fuelStationUserDetailId = useSelector(selectFuelStationUserDetailsId);
+  const currentDate = moment().utc();
+  const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await HomeService.getFuelConsumptionInformation(token);
-  //       setData(response.result.result);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   };
+  const filters = ['Daily', 'Weekly', 'Monthly'];
+  const [currentFilter, setCurrentFilter] = useState(filters[0]);
+  const token = useSelector(selectToken);
 
-  //   fetchData();
-  // }, [token]);
-
-  const handleNext = () => {
-    if (currentIndex < data.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      Animated.spring(translateX, {
-        toValue: -width * (currentIndex + 1),
-        useNativeDriver: true,
-      }).start();
+  const fetchData = async startDate => {
+    setLoading(true); // Start loading
+    const endDate = moment().utc().format('YYYY-MM-DD');
+    try {
+      const response = await SalesService.getSalesDataForPeriod(
+        token,
+        fuelStationUserDetailId,
+        startDate,
+        endDate,
+      );
+      switch (response.error_code) {
+        case ErrorCode.SUCCESS:
+          setData(response.result);
+          break;
+        case ErrorCode.TOKEN_INVALID:
+          Alert.alert(
+            'Session timed out: consumption',
+            'Please login again to continue',
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.navigate('Login'),
+              },
+            ],
+            {cancelable: false},
+          );
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      Animated.spring(translateX, {
-        toValue: -width * (currentIndex - 1),
-        useNativeDriver: true,
-      }).start();
-    }
-  };
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) return;
 
-  const getCurrentMonthAndYear = () => {
-    const currentDate = new Date();
-    currentDate.setMonth(currentDate.getMonth() - currentIndex);
-    const month = currentDate.toLocaleString('default', {month: 'long'});
-    const year = currentDate.getFullYear();
-    return `${month} ${year}`;
+      let params;
+
+      switch (currentFilter) {
+        case 'Monthly':
+          params = {
+            startDate: currentDate.startOf('month').format('YYYY-MM-DD'),
+          };
+          break;
+        case 'Weekly':
+          params = {
+            startDate: currentDate.startOf('week').format('YYYY-MM-DD'),
+          };
+          break;
+        case 'Daily':
+          params = {
+            startDate: currentDate.format('YYYY-MM-DD'),
+          };
+          break;
+        default:
+          params = {
+            startDate: currentDate.format('YYYY-MM-DD'),
+          };
+          break;
+      }
+
+      fetchData(params.startDate); // Ensure fetchData is only called once
+    }, [token, currentFilter]), // Dependencies
+  );
+
+  const handleFilterChange = filter => {
+    setCurrentFilter(filter);
+    let startDate;
+    switch (filter) {
+      case 'Monthly':
+        startDate = currentDate.startOf('month').format('YYYY-MM-DD');
+        fetchData(startDate);
+        break;
+      case 'Weekly':
+        startDate = currentDate.startOf('week').format('YYYY-MM-DD');
+        fetchData(startDate);
+        break;
+      case 'Daily':
+        fetchData(currentDate.format('YYYY-MM-DD'));
+        break;
+      default:
+        fetchData(currentDate, currentDate);
+        break;
+    }
   };
 
   return (
     <View style={styles.container}>
-      {data.length > 0 && (
+      <Dropdown
+        onSelectItem={handleFilterChange}
+        styles={styles.dropdownButton}
+        wrapperStyles={styles.dropdownWrapper}
+        data={filters}
+      />
+      {loading ? (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator
+            size={Platform.OS === 'ios' ? 'large' : 50}
+            color={colors.brandAccentColor}
+          />
+        </View>
+      ) : data?.length > 0 ? (
         <Animated.View
           style={[
             styles.animatedView,
@@ -87,79 +163,13 @@ const ConsumptionComponent = ({navigation}) => {
           ]}>
           {data.map((item, index) => (
             <View key={index} style={styles.itemContainer}>
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: 16,
-                  left: width / 2 - 70,
-                  zIndex: 9999999999,
-                }}>
-                {/* <Text
-                  style={{
-                    color: '#22774C',
-                    fontWeight: '700', // Use string value for fontWeight
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                  }}>
-                  Fuel
-                </Text>
-                <Text
-                  style={{
-                    color: '#22774C',
-                    fontWeight: '500', // Use string value for fontWeight
-                    fontSize: 12,
-                    fontFamily: 'Inter',
-                    marginTop: -2,
-                  }}>
-                  {item.fuel_limit - item.available_fuel_limit}/
-                  {item.fuel_limit} */}
-                {/* </Text> */}
-                <FuelStationPlaceHolder />
-              </View>
-
-              {/* <ConsumptionComponentReal
-                total={item.fuel_limit}
-                consumed={item.available_fuel_limit}
-                navigation={navigation}
-              /> */}
-              {/* <SalesComponent /> */}
+              <SalesComponent data={data} />
             </View>
           ))}
         </Animated.View>
+      ) : (
+        <SalesComponent />
       )}
-
-      {/* <View style={styles.navigationContainer}>
-        <TouchableOpacity
-          onPress={handlePrev}
-          // disabled={currentIndex === 0}
-          disabled={true}
-          style={{padding: 20}}>
-          {/* {currentIndex === 0 ? <ChevLeftSmall /> : <ChevLeftGreenSmall />} 
-          <ChevLeftSmall />
-        </TouchableOpacity>
-
-        <View style={styles.titleContainer}>
-          <Text style={[styles.titleText, globalStyles.text]}>
-            {t('homeScreen.salesOverview')}
-          </Text>
-          {/* <Text style={[styles.subtitleText, globalStyles.text]}>
-            {getCurrentMonthAndYear()}
-          </Text> 
-        </View>
-
-        <TouchableOpacity
-          onPress={handleNext}
-          style={{padding: 20}}
-          // disabled={currentIndex === data.length - 1}>
-          disabled={true}>
-          {/* {currentIndex === data.length - 1 ? (
-            <ChevRightSmall />
-          ) : (
-            <ChevRigthGreenSmall />
-          )} 
-          <ChevRightSmall />
-        </TouchableOpacity>
-      </View>*/}
     </View>
   );
 };
@@ -170,7 +180,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     marginHorizontal: 20,
-    justifyContent: 'space-around',
+    // justifyContent: 'space-around',
     paddingVertical: 23,
     elevation: 2,
     margin: 1,
@@ -188,25 +198,12 @@ const styles = StyleSheet.create({
     width,
     alignItems: 'center',
   },
-  navigationContainer: {
-    flexDirection: 'row',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    marginTop: 14,
+  dropdownButton: {
+    borderRadius: 8,
   },
-  titleContainer: {
-    alignItems: 'center',
-  },
-  titleText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    // marginBottom: 12,
-    color: colors.primaryText,
-  },
-  subtitleText: {
-    fontSize: 10,
-    color: colors.homeText,
+  dropdownWrapper: {
+    alignSelf: 'flex-end',
+    marginHorizontal: 20,
   },
 });
 

@@ -10,6 +10,7 @@ import {useTranslation} from 'react-i18next';
 import {Print} from '../assets/icons';
 import {getFuelType} from '../enums/fuel-type';
 import {formatDateTime} from '../utils/helper-functions';
+import {hp} from '../utils/screen';
 
 const TransactionHistoryComponent = ({
   isCompact = true,
@@ -21,7 +22,6 @@ const TransactionHistoryComponent = ({
   quantity = '29.72637824',
   transactionType = 'undefined',
 }) => {
-  console.log('Fuel type is : ' + fuelType);
   const {t} = useTranslation();
   const formattedDate = formatDateTime(transactionDateTime);
   return (
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     // backgroundColor: 'red',
     borderRadius: 16,
-    fontSize: 10,
+    fontSize: hp(10),
     fontWeight: '400',
     lineHeight: 16,
     fontFamily: 'Inter',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   vehicleName: {
     marginTop: 8,
     color: colors.primaryText,
-    fontSize: 16,
+    fontSize: hp(14),
     fontWeight: '700',
     fontFamily: 'Inter',
     lineHeight: 20,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   date: {
     marginTop: 8,
     color: colors.primaryText,
-    fontSize: 12,
+    fontSize: hp(12),
     fontWeight: '400',
     fontFamily: 'Inter',
     lineHeight: 16,
@@ -165,14 +165,14 @@ const styles = StyleSheet.create({
   statItem: {flex: 1, paddingHorizontal: 8, paddingVertical: 4},
   statLabel: {
     color: colors.primaryText,
-    fontSize: 12,
+    fontSize: hp(12),
     fontWeight: '400',
     fontFamily: 'Inter',
     lineHeight: 16,
   },
   statValue: {
     color: colors.primaryText,
-    fontSize: 12,
+    fontSize: hp(12),
     fontWeight: '700',
     fontFamily: 'Inter',
     lineHeight: 16,

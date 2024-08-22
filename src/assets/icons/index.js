@@ -14,6 +14,8 @@ import ChevRigthGreenSmall from './chev-right-green-small.svg';
 import ChevLeftGreenSmall from './chev-left-green-small.svg';
 import Info from './info.svg';
 import FuelStationPlaceHolder from './fuel-station-placeholder.svg';
+import ChevDown from './chevron-down.svg';
+import ChevUp from './chevron-up.svg';
 export {
   Eye,
   EyeSlash,
@@ -31,4 +33,6 @@ export {
   ChevRigthGreenSmall,
   Info,
   FuelStationPlaceHolder,
+  ChevDown,
+  ChevUp,
 };

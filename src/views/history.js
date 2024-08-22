@@ -21,6 +21,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {EmptyListIcon} from '../assets/svgs';
 import {handleSessionTimeout} from '../utils/helper-functions';
 import {getFuelType} from '../enums/fuel-type';
+import ErrorCode from '../enums/error-codes';
 
 const History = ({navigation}) => {
   const [data, setData] = useState([]);
@@ -48,7 +49,7 @@ const History = ({navigation}) => {
       setIsLoading(false);
       setIsRefreshing(false);
 
-      if (response.error_code === 0) {
+      if (response.error_code === ErrorCode.SUCCESS) {
         if (refresh) {
           setData(response.result);
         } else {
@@ -58,10 +59,10 @@ const History = ({navigation}) => {
         if (response.result.length < limit) {
           setHasMore(false);
         }
-      } else if (response.error_code === 4) {
+      } else if (response.error_code === ErrorCode.NOT_EXIST) {
         dispatch(setToken(response.token));
         setError('No transaction record found');
-      } else if (response.error_code === 8) {
+      } else if (response.error_code === ErrorCode.TOKEN_INVALID) {
         // handleSessionTimeout(navigation);
         Alert.alert(
           'Session timed out',
@@ -139,8 +140,17 @@ const History = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {isError ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={styles.emptyContainer}>
+          <EmptyListIcon />
+          <Text
+            style={{
+              color: 'black',
+              fontSize: 18,
+              fontWeight: '600',
+              marginTop: 12,
+            }}>
+            {error}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -196,9 +206,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: {
-    color: 'red',
-  },
+  // errorText: {
+  //   color: 'red',
+  // },
 });
 
 export default History;

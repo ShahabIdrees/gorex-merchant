@@ -32,6 +32,7 @@ import {
   selectVehicleVariant,
 } from '../redux/receipt-slice';
 import {getFuelType} from '../enums/fuel-type';
+import {hp} from '../utils/screen';
 
 const RefillSuccessReceipt = ({navigation}) => {
   const fuelType = useSelector(selectFuelType);
@@ -145,14 +146,14 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: hp(24),
     alignSelf: 'center',
     fontWeight: 'bold',
     color: colors.primaryText,
     marginBottom: 16,
   },
   message: {
-    fontSize: 14,
+    fontSize: hp(14),
     color: '#474747',
     marginBottom: 24,
     textAlign: 'center',

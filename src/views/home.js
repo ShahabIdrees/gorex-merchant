@@ -36,6 +36,7 @@ import {
 import {EmptyListIcon} from '../assets/svgs';
 import {getFuelType} from '../enums/fuel-type';
 import {FuelStationPlaceHolder} from '../assets/icons';
+import ErrorCode from '../enums/error-codes';
 
 const Home = ({navigation}) => {
   const {t} = useTranslation();
@@ -114,35 +115,36 @@ const Home = ({navigation}) => {
         limit,
       );
       setIsLoading(false);
-      if (response.error_code === 0) {
+      if (response.error_code === ErrorCode.SUCCESS) {
         setData(response.result);
         console.log('Data received: ' + response.result);
         dispatch(setToken(response.token));
-      } else if (response.error_code === 4) {
+      } else if (response.error_code === ErrorCode.NO_DATA) {
         // console.log('Token: ', response.token);
+        console.log('RES: ' + response.token);
         dispatch(setToken(response.token));
         setError(response.message);
       } else if (response.error_code === 2) {
         // console.log('Token: ', response.token);
         // dispatch(setToken(response.token));
         setError(response.message);
-      } else if (response.error_code === 8) {
+      } else if (response.error_code === ErrorCode.TOKEN_INVALID) {
         // handleSessionTimeout(navigation);
-        Alert.alert(
-          'Session timed out',
-          'Please login again to continue',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Login'), // Adjust 'LoginScreen' to your login screen's name
-            },
-          ],
-          {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
-        );
-        dispatch(setToken(null));
+        // Alert.alert(
+        //   'Session timed out',
+        //   'Please login again to continue',
+        //   [
+        //     {
+        //       text: 'OK',
+        //       onPress: () => navigation.navigate('Login'), // Adjust 'LoginScreen' to your login screen's name
+        //     },
+        //   ],
+        //   {cancelable: false}, // This ensures the alert cannot be dismissed by tapping outside of it
+        // );
+        // dispatch(setToken(null));
       } else {
         setIsError(true);
-        setError(response.error_message || 'Something went wrong');
+        setError(response.message);
       }
     } catch (err) {
       setIsLoading(false);
@@ -173,7 +175,7 @@ const Home = ({navigation}) => {
               },
               {paddingTop: Platform.OS === 'ios' ? 30 : 0},
             ]}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{flexDirection: 'row', flex: 3}}>
               <TouchableOpacity
                 style={styles.imageWrapper}
                 onPress={() => {
@@ -181,29 +183,41 @@ const Home = ({navigation}) => {
                 }}>
                 <Image
                   source={{uri: profileImage}}
-                  resizeMethod="fill"
+                  resizeMethod="contain"
                   style={styles.image}
                 />
               </TouchableOpacity>
-              <View style={{marginHorizontal: 8}}>
+              <View style={{marginHorizontal: 8, flex: 2}}>
                 <Text style={[styles.welcome, {textAlign: 'left'}]}>
                   {t('homeScreen.welcome')}
                 </Text>
-                <Text style={[styles.name]}>{userName}</Text>
+                <Text
+                  style={styles.name}
+                  numberOfLines={2}
+                  ellipsizeMode="tail">
+                  {userName}
+                  {/* Muhammad Shahab U Din Chatha */}
+                </Text>
               </View>
             </View>
-            <View style={{alignItems: 'flex-end'}}>
+            <View style={{alignItems: 'flex-end', flex: 1}}>
               <View style={styles.companyImageWrapper}>
                 <Image
                   source={{uri: fuelStationImage}}
-                  resizeMode="fill"
-                  style={styles.image}></Image>
+                  resizeMode="cover"
+                  style={styles.image}
+                />
               </View>
-              <Text style={[styles.fuelStationName]}>{fuelStationName}</Text>
+              <Text
+                style={styles.fuelStationName}
+                numberOfLines={2}
+                ellipsizeMode="tail">
+                {fuelStationName}
+                {/* Go and Relax Private Limited */}
+              </Text>
             </View>
           </View>
-          {/* <ConsumptionComponent navigation={navigation} /> */}
-          <FuelStationPlaceHolder style={{alignSelf: 'center'}} />
+          <ConsumptionComponent navigation={navigation} />
           <View style={{marginHorizontal: -20, padding: 20}}>
             <ScrollView
               horizontal={true}
@@ -225,14 +239,14 @@ const Home = ({navigation}) => {
                 styles.transactionHistoryContainer,
                 {flexDirection: 'row'},
               ]}>
-              <Text style={[styles.transactionHistoryText, globalStyles.text]}>
+              <Text style={[styles.transactionHistoryText]}>
                 {t('homeScreen.recentUser')}
               </Text>
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate('History');
                 }}>
-                <Text style={[styles.viewAllText, globalStyles.text]}>
+                <Text style={[styles.viewAllText]}>
                   {t('homeScreen.viewAll')}
                 </Text>
               </TouchableOpacity>
@@ -242,7 +256,16 @@ const Home = ({navigation}) => {
             <ActivityIndicator size="large" color={colors.primary} />
           ) : isError ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+              {/* <Text style={styles.errorText}>{error}</Text> */}
+              <Text
+                style={{
+                  color: 'black',
+                  fontSize: 18,
+                  fontWeight: '600',
+                  marginTop: 12,
+                }}>
+                {error}
+              </Text>
             </View>
           ) : (
             <FlatList
@@ -264,7 +287,6 @@ const Home = ({navigation}) => {
               ListEmptyComponent={renderEmpty}
               keyExtractor={item => item._id}
               style={{marginBottom: 120}}
-              // ListEmptyComponent={<EmptyListComponent isFullScreen={false} />}
             />
           )}
         </ScrollView>
@@ -345,7 +367,6 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 23,
     overflow: 'hidden',
-    // borderWidth: 1,
     borderColor: colors.imageBorder,
     elevation: 1,
     shadowRadius: 20,
@@ -365,19 +386,23 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   fuelStationName: {
-    // marginTop: 2,
     fontSize: 12,
     fontWeight: 'bold',
     color: colors.primaryText,
+    flexShrink: 1,
+    // width: '100%',
+    textAlign: 'justify',
   },
   name: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.primaryText,
+    flexShrink: 1,
+    width: '100%',
   },
   companyImageWrapper: {
-    // borderWidth: 1,
     borderColor: colors.imageBorder,
+    borderWidth: 0.2,
     height: 29,
     width: 56,
     borderRadius: 15,
@@ -398,7 +423,6 @@ const styles = StyleSheet.create({
   transactionHistoryText: {
     color: colors.primaryText,
     fontWeight: '700',
-    fontFamily: 'Inter',
     fontSize: 14,
   },
   viewAllText: {
@@ -406,7 +430,6 @@ const styles = StyleSheet.create({
     textDecorationColor: colors.homeText,
     color: colors.primaryText,
     fontSize: 12,
-    fontFamily: 'Inter',
   },
   errorContainer: {
     flex: 1,
@@ -415,9 +438,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-  },
-  emptyContainer: {
-    alignItems: 'center',
   },
 });
 
