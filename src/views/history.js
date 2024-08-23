@@ -114,7 +114,7 @@ const History = ({navigation}) => {
   };
 
   const renderFooter = () => {
-    if (!hasMore) return null;
+    if (!hasMore) return <View style={{height: 120}}></View>;
     return isLoading ? (
       <ActivityIndicator size="large" color="#0000ff" />
     ) : null;

@@ -10,4 +10,5 @@ export const colors = {
   white: 'white',
   errorBackground: '#FFF4F3',
   invalidText: '#FF1400',
+  linkColor: '#2752E7',
 };

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Linking,
 } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import {useDispatch, useSelector} from 'react-redux';
@@ -65,6 +66,9 @@ const Login = ({navigation}) => {
     setRememberme(rememberMeState);
   }, [phone, rememberMeState]);
 
+  const handlePrivacyPolicyPress = () => {
+    Linking.openURL('https://gorex.ai/privacy-policy');
+  };
   const handleLoginPress = async () => {
     if (!fullPhoneNumber) {
       setIsError(true);
@@ -210,9 +214,14 @@ const Login = ({navigation}) => {
       )}
       <TouchableOpacity
         style={{alignSelf: 'center', marginTop: 16}}
+        onPress={handlePrivacyPolicyPress}>
+        <Text style={{color: colors.linkColor}}>Privacy Policy</Text>
+      </TouchableOpacity>
+      {/* <TouchableOpacity
+        style={{alignSelf: 'center', marginTop: 16}}
         onPress={handleForgotPasswordPress}>
         <Text style={{color: 'black'}}>Forgot Password?</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <View style={styles.bopContainer}>
         <Text
           style={{
